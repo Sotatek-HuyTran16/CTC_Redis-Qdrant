@@ -1,0 +1,91 @@
+---
+- name: Gather system info and export to CSV
+  hosts: all
+  gather_facts: no
+  vars:
+    output_file: "./server_report.csv"
+
+  tasks:
+    - name: Gather CPU info
+      ansible.builtin.shell: |
+        lscpu | grep -E 'Model name|CPU\(s\)' | awk -F: '{print $2}' | tr -d ' '
+      register: cpu_info
+
+    - name: Gather RAM info (using RAM available)
+      ansible.builtin.shell: |
+        free -m | awk '/Mem:/ {print $2","$3","$7}'   # total, used, available
+      register: ram_info
+
+    - name: Gather Disk info
+      ansible.builtin.shell: |
+        df -h --total | awk '/total/ {print $2","$3","$4","$5}'
+      register: disk_info
+
+    - name: Gather IP addresses
+      ansible.builtin.shell: hostname -I | awk '{$1=$1; print}'
+      register: ip_info
+
+    - name: Gather OS information
+      ansible.builtin.shell: cat /etc/os-release | grep -E 'NAME|VERSION' | paste -sd " "
+      register: os_info
+
+    - name: Ensure output file exists with header (only if missing)
+      ansible.builtin.stat:
+        path: "{{ output_file }}"
+      register: csv_file
+
+    - name: Create CSV header if file does not exist
+      ansible.builtin.copy:
+        dest: "{{ output_file }}"
+        content: "hostname,group,ip,os,cpu,ram_total_mb,ram_used_mb,ram_available_mb,disk_total,disk_used,disk_available,disk_use%\n"
+        mode: '0644'
+      when: not csv_file.stat.exists
+      delegate_to: localhost
+      run_once: true
+
+    - name: Append server info to CSV (on control node)
+      ansible.builtin.lineinfile:
+        path: "{{ output_file }}"
+        line: "{{ inventory_hostname }},{{ group_names[0] }},{{ ip_info.stdout }},{{ os_info.stdout }},{{ cpu_info.stdout }},{{ ram_info.stdout }},{{ disk_info.stdout }}"
+        create: yes
+        insertafter: EOF
+      delegate_to: localhost
+
+
+# --- Play dành cho máy control node ---
+- name: Gather info from control node
+  hosts: localhost
+  gather_facts: no
+  vars:
+    output_file: "./server_report.csv"
+  tasks:
+    - name: Gather CPU info
+      ansible.builtin.shell: |
+        lscpu | grep -E 'Model name|CPU\(s\)' | awk -F: '{print $2}' | tr -d ' '
+      register: cpu_info
+
+    - name: Gather RAM info (using RAM available)
+      ansible.builtin.shell: |
+        free -m | awk '/Mem:/ {print $2","$3","$7}'   # total, used, available
+      register: ram_info
+
+    - name: Gather Disk info
+      ansible.builtin.shell: |
+        df -h --total | awk '/total/ {print $2","$3","$4","$5}'
+      register: disk_info
+
+    - name: Gather IP addresses
+      ansible.builtin.shell: hostname -I | awk '{$1=$1; print}'
+      register: ip_info
+
+    - name: Gather OS information
+      ansible.builtin.shell: cat /etc/os-release | grep -E 'NAME|VERSION' | paste -sd " "
+      register: os_info
+
+    - name: Append control node info to CSV
+      ansible.builtin.lineinfile:
+        path: "{{ output_file }}"
+        line: "control_node,local,{{ ip_info.stdout }},{{ os_info.stdout }},{{ cpu_info.stdout }},{{ ram_info.stdout }},{{ disk_info.stdout }}"
+        create: yes
+        insertafter: EOF
+      delegate_to: localhost

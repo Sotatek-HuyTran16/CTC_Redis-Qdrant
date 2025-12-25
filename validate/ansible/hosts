@@ -1,0 +1,29 @@
+[control_node]
+localhost ansible_connection=local
+
+[servers_k8s_projects]
+prod-k8s-vm-master ansible_host=10.20.0.10
+prod-k8s-vm-monitoring ansible_host=10.20.0.14
+prod-k8s-vm-data01 ansible_host=10.20.0.11
+prod-k8s-vm-data02 ansible_host=10.20.0.12
+prod-k8s-vm-data03 ansible_host=10.20.0.13
+prod-k8s-vm-registry ansible_host=10.20.0.15
+prod-nfs-vm ansible_host=10.20.10.16
+
+[servers_redis_projects]
+dev-k8s-vm-master ansible_host=10.10.0.10
+dev-k8s-vm-monitoring ansible_host=10.10.0.14
+dev-k8s-vm-data01 ansible_host=10.10.0.11
+dev-k8s-vm-data02 ansible_host=10.10.0.12
+dev-k8s-vm-data03 ansible_host=10.10.0.13
+dev-k8s-vm-dify01 ansible_host=10.10.0.15
+dev-k8s-vm-dify02 ansible_host=10.10.0.16
+dev-k8s-vm-dify03 ansible_host=10.10.0.17
+dev-binddns-vm-01 ansible_host=10.10.10.10
+dev-binddns-vm-02 ansible_host=10.10.10.11
+dev-artifacts-vm ansible_host=10.10.10.13
+dev-pypi-vm ansible_host=10.10.10.12
+dev-minio-vm ansible_host=10.10.10.18
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3

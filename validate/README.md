@@ -1,0 +1,1 @@
+# This folder is ansible for check params of VMS

@@ -1,0 +1,31 @@
+---
+- name: Configure UFW firewall on Redis project servers
+  hosts: servers_redis_projects
+  become: yes
+  vars:
+    allowed_subnet: "172.16.20.0/24"
+
+  tasks:
+
+    - name: Allow subnet access
+    # Equivalent: sudo ufw allow from 172.16.20.0/24
+      ufw:
+        rule: allow
+        src: "{{ allowed_subnet }}"
+
+    - name: Set default outgoing policy to deny
+    # Equivalent: sudo ufw default deny outgoing
+      ufw:
+        direction: outgoing
+        policy: deny
+
+    - name: Set default incoming policy to allow
+    # Equivalent: sudo ufw default allow incoming
+      ufw:
+        direction: incoming
+        policy: allow
+
+    - name: Enable UFW
+    # Equivalent: sudo ufw enable
+      ufw:
+        state: enabled

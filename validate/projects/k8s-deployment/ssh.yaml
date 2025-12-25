@@ -1,0 +1,34 @@
+---
+- name: Install and start SSH on Ubuntu servers
+  hosts: servers_k8s_projects
+  become: yes
+  gather_facts: yes
+
+  vars:
+    local_authorized_keys: "{{ lookup('env', 'HOME') + '/.ssh/authorized_keys' }}"
+
+  tasks:
+    - name: Install OpenSSH server
+      ansible.builtin.apt:
+        name: openssh-server
+        state: present
+        update_cache: yes
+
+    - name: Ensure SSH service is enabled and running
+      ansible.builtin.service:
+        name: ssh
+        state: started
+        enabled: yes
+
+    - name: Disable password authentication
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+        backup: yes
+
+    - name: Restart SSH service
+      ansible.builtin.service:
+        name: ssh
+        state: restarted
