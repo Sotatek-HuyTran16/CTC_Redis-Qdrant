@@ -1,0 +1,228 @@
+image:
+  registry: docker.io
+  repository: bitnami/redis
+  tag: 8.4.0-debian-12-r0
+
+auth:
+  enabled: true
+  sentinel: true
+
+  existingSecret: "redis-default-user"
+  existingSecretPasswordKey: "password"
+
+  usePasswordFiles: true
+  usePasswordFileFromSecret: true
+
+  acl:
+    enabled: true
+    sentinel: true
+    users:
+      - username: "admin"
+        enabled: "on"
+        commands: "+@all"
+        keys: "~*"
+        channels: "&*"
+      - username: "default"
+        enabled: "on"
+        commands: "+@read"
+        keys: "~*"
+        channels: "&*"
+
+    userSecret: "redis-acl-secret"
+
+replica:
+  kind: StatefulSet
+  replicaCount: 3
+
+  containerPorts:
+    redis: 6379
+
+  automountServiceAccountToken: true
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+
+  podSecurityContext:
+    enabled: true
+    fsGroupChangePolicy: Always
+    sysctls: []
+    supplementalGroups: []
+    fsGroup: 1001
+
+  containerSecurityContext:
+    enabled: true
+    seLinuxOptions: {}
+    runAsUser: 1001
+    runAsGroup: 1001
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop: ["ALL"]
+
+  podAntiAffinityPreset: hard
+  
+  nodeAffinityPreset:
+    type: "hard"
+    key: "nodepool"
+    values:
+      - "dev-data"
+
+  affinity: {}
+  nodeSelector: {}
+
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-data"
+      effect: "NoSchedule"
+
+  persistence:
+    enabled: true
+    path: /data
+    storageClass: "dev-redis-openebs-sc"
+    accessModes:
+      - ReadWriteOnce
+    size: 20Gi
+
+  persistentVolumeClaimRetentionPolicy:
+    enabled: false
+    whenScaled: Retain
+    whenDeleted: Retain
+
+  service:
+    type: ClusterIP
+    ports:
+      redis: 6379
+    nodePorts:
+      redis: ""
+   
+#  serviceAccount:
+#    create: true
+#    name: "dev-redis-sa"
+
+sentinel:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: bitnami/redis-sentinel
+    tag: 8.4.0-debian-12-r0
+
+
+  masterSet: mymaster
+  quorum: 2
+
+  containerPorts:
+    sentinel: 26379
+
+  persistence:
+    enabled: true
+    storageClass: "dev-redis-openebs-sc"
+    accessModes:
+      - ReadWriteOnce
+    size: 100Mi
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+
+  containerSecurityContext:
+    enabled: true
+    seLinuxOptions: {}
+    runAsUser: 1001
+    runAsGroup: 1001
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop: ["ALL"]
+
+  service:
+    type: ClusterIP
+    ports:
+      redis: 6379
+      sentinel: 26379
+
+  masterService:
+    enabled: true
+    type: ClusterIP
+    ports:
+      redis: 6379
+
+serviceAccount:
+    create: true
+    name: "dev-redis-sa"
+
+rbac:
+  create: true
+
+metrics:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: bitnami/redis-exporter
+    tag: 1.76.0-debian-12-r0
+  
+  containerPorts:
+    http: 9121
+
+  redisTargetHost: "localhost"
+
+  containerSecurityContext:
+    enabled: true
+    seLinuxOptions: {}
+    runAsUser: 1001
+    runAsGroup: 1001
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop: ["ALL"]
+  
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  
+  service:
+    enabled: true
+    type: ClusterIP
+    ports:
+      http: 9121
+  
+  serviceMonitor:
+    port: http-metrics
+    enabled: true
+    namespace: "dev-monitoring"
+    interval: 30s
+    scrapeTimeout: 10s
+    additionalLabels:
+      release: "kube-prometheus-stack"
+
+    additionalEndpoints:
+      - port: http-metrics
+        interval: 30s
+        path: /scrape
+        params:
+          target: ["localhost:26379"]
+        metricRelabelings:
+          - targetLabel: app
+            replacement: sentinel

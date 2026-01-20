@@ -1,5 +1,11 @@
 # Guide to remove old cluster
 
+## Remove node (if have)
+
+```
+sudo k8s remove-node <Node-Name>
+```
+
 ## Delete k8s snap
 
 ```bash
@@ -25,6 +31,14 @@ sudo rm -rf \
   /var/lib/kubelet \
   /var/lib/containerd \
   ~/.kube
+```
+
+Clean network folder
+
+```bash
+# check /opt/cni/bin
+
+# check /etc/cni/net.d
 ```
 
 ## Clean services

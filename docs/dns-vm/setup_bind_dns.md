@@ -52,7 +52,7 @@ zone "dev-dify.ctc.local" IN {
 };
 ```
 
-Create zone file
+## Create zone file
 
 ```bash
 mkdir /etc/bind/zones

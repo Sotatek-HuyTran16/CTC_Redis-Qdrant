@@ -125,7 +125,7 @@ sudo ln -s /etc/nginx/sites-available/harbor   /etc/nginx/sites-enabled/
 sudo systemctl reload nginx
 ```
 
-# 4. Config Harbor to use https
+# 4. Config Harbor to use https (Optional)
 
 ## 4.1. From Artifact VM
 
@@ -208,9 +208,9 @@ sudo ./prepare
 sudo ./install.sh
 ```
 
-# 5. Trust certificate on Client (docker - Download VM)
+## 4.2 Trust certificate on Client (from Download VM)
 
-## 5.1. From Download VM
+## Copy cert
 
 ```
 sudo mkdir -p /etc/docker/certs.d/registry.dev-dify.ctc.local
@@ -225,7 +225,7 @@ sudo cp /etc/harbor/certs/registry.dev-dify.ctc.local.crt \
 sudo systemctl restart docker
 ```
 
-Login again
+## Login again
 
 ```
 docker login registry.dev-dify.ctc.local

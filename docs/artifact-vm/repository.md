@@ -1,4 +1,5 @@
 # 1. Setup Local Repo
+
 ## 1.1. From download server
 
 ## Download needed software package
@@ -62,13 +63,13 @@ cd /var/www/apt/
 ```
 
 
-Create metadata
+## Create metadata
 
 ```
 sudo dpkg-scanpackages . /dev/null | gzip -9c | sudo tee Packages.gz > /dev/null
 ```
 
-Create Nginx endpoint
+## Create Nginx endpoint
 
 ```
 sudo nano /etc/nginx/site-availables/apt-repo
