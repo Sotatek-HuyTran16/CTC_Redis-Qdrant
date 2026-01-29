@@ -1,0 +1,649 @@
+global:
+  edition: "SELF_HOSTED"
+
+  appSecretKey: "wqv7IXhEFS55wsLAcu9Arpisio0RLCHjv1HKVF3IjPgQ2SVsJJVcJvgr"
+  innerApiKey: "UY8Qri0LOKpDO9eckiY8dvOgtJynMGaO6XikQ6J1Tjdsafon0OeBYrXW"
+
+  useTLS: false
+
+  consoleApiDomain: dify-console-api.dev-dify.ctc.local
+  consoleWebDomain: dify-console-web.dev-dify.ctc.local
+
+  serviceApiDomain: dify-service-api.dev-dify.ctc.local
+
+  appApiDomain: dify-app-api.dev-dify.ctc.local
+  appWebDomain: dify-app-web.dev-dify.ctc.local
+
+  filesDomain: minio.dev-dify.ctc.local
+
+  enterpriseDomain: dify-enterprise.dev-dify.ctc.local
+
+
+api:
+  enabled: true
+  image:
+    repository: langgenius/dify-api
+    tag: "338e0f74b9ef5a408f71f8d7f11ac2f8b3f0e544"
+  
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+    
+  serviceAccountName: "dev-dify-api-sa"
+            
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
+  
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+
+worker:
+  enabled: true
+  image:
+    repository: langgenius/dify-api
+    tag: "338e0f74b9ef5a408f71f8d7f11ac2f8b3f0e544"
+  
+  extraEnv:
+    - name: "CELERY_USE_SENTINEL"
+      value: "true"
+    - name: "CELERY_SENTINEL_MASTER_NAME"
+      value: "mymaster"
+    - name: "CELERY_BROKER_URL"
+      value: "sentinel://:sotatek@redis-sentinel.dev-redis.svc.cluster.local:26379/"
+
+  replicas: 3
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+
+  serviceAccountName: "dev-dify-worker-sa"
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
+
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+
+workerBeat:
+  enabled: true
+  image:
+    repository: langgenius/dify-api
+    tag: "338e0f74b9ef5a408f71f8d7f11ac2f8b3f0e544"
+  
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+
+  serviceAccountName: "dev-dify-worker-beat-sa"
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
+
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+
+web:
+  enabled: true
+  image:
+    repository: langgenius/dify-web
+    tag: "338e0f74b9ef5a408f71f8d7f11ac2f8b3f0e544"
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+  
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+
+sandbox:
+  enabled: true
+  image:
+    repository: langgenius/dify-sandbox
+    tag: "0.2.12"
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+  
+  serviceAccountName: "dev-dify-sandbox-sa"
+
+#  affinity:
+#    nodeAffinity:
+#      requiredDuringSchedulingIgnoredDuringExecution:
+#        nodeSelectorTerms:
+#          - matchExpressions:
+#              - key: "nodepool"
+#                operator: "In"
+#                values:
+#                  - "dev-dify"
+  
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+  
+  extraEnv:
+    - name: "PIP_TRUSTED_HOST"
+      value: "pypi.dev-dify.ctc.local"
+    - name: "PIP_INDEX_URL"
+      value: "http://pypi.dev-dify.ctc.local/simple"
+    - name: "NO_PROXY"
+      value: "pypi.dev-dify.ctc.local"
+
+  pythonRequirements: |
+    fastapi==0.104.1
+    pydantic==2.5.1
+    pandas==2.0.3
+
+enterprise:
+  enabled: true
+  image:
+    repository: langgenius/dify-enterprise
+    tag: "0.12.5"
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
+  
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+  
+  appSecretKey: "vjregGhU7sAH07MNiW4WAbbdqeja/pR49lFbeGVQLkln1uqmI7NH8jIY"
+  adminAPIsSecretKeySalt: "0dL4iOngTPQy4KZE1IEFOk6iyZJseXOJbmYVt5lV2dCTX2sJyQYhlrJ2"
+
+  innerApi:
+    enabled: true
+  
+  corsOrigins: "*"
+  
+  serviceAccountName: "dev-dify-enterprise-api-sa"
+
+  licenseMode: "offline"
+
+enterpriseAudit:
+  enabled: true
+  image:
+    repository: langgenius/dify-audit
+    tag: "0.12.5"
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+  
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
+  
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+  
+  scheduler:
+    solidifyCheckCron: "*/5 * * * *"
+    solidifyDelayDays: 90
+    timeout: "600s"
+
+enterpriseFrontend:
+  enabled: true
+  image:
+    repository: langgenius/dify-enterprise-frontend
+    tag: "0.12.3"
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+
+  serviceAccountName: "dev-dify-enterprise-web-sa"
+  
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
+  
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+  
+ssrfProxy:
+  enabled: true
+  image:
+    repository: ubuntu/squid
+    tag: "5.2-22.04_beta"
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+
+  serviceAccountName: "dev-dify-ssrf-proxy-sa"
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
+  
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+
+unstructured:
+  enabled: true
+  image:
+    repository: downloads.unstructured.io/unstructured-io/unstructured-api
+    tag: "0.0.70"
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+
+  serviceAccountName: "dev-dify-unstructured-sa"
+
+  nodeSelector:
+    nodepool: "dev-dify"
+    kubernetes.io/hostname: "dev-k8s-vm-dify01"
+
+#  affinity:
+#    nodeAffinity:
+#      requiredDuringSchedulingIgnoredDuringExecution:
+#        nodeSelectorTerms:
+#          - matchExpressions:
+#              - key: "nodepool"
+#                operator: "In"
+#                values:
+#                  - "dev-dify"
+#              - key: "kubernetes.io/hostname"
+#                operator: "In"
+#                values:
+#                  - "dev-k8s-vm-dify01"
+  
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+    - key: "node.kubernetes.io/disk-pressure"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+
+plugin_daemon:
+  enabled: true
+  image:
+    repository: langgenius/dify-plugin-daemon
+    tag: "0.2.0-serverless"
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+  
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
+  
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+  
+  serviceType: "NodePort"
+  adminApiEnabled: true
+
+
+plugin_controller:
+  replicas: 1
+  image:
+    repository: langgenius/enterprise_plugin-crd
+    tag: 0.12.5
+  
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+  
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
+  
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+
+
+plugin_connector:
+  replicas: 1
+  image:
+    repository: langgenius/enterprise_plugin-connector
+    tag: 0.12.5
+  
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
+  
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+
+  insecureImageRepo: true
+  imageRepoType: docker
+  imageRepoPrefix: "registry.dev-dify.ctc.local/dify-plugins/"
+  imageRepoSecret: "harbor-registry-secret"
+
+  gatewayImage: "nginx:1.27.3"
+  shaderImage: "gcr.io/kaniko-project/executor:latest"
+  busyBoxImage: "busybox:latest"
+
+
+gateway:
+  replicas: 1
+  image:
+    repository: langgenius/enterprise_gateway
+    tag: 0.12.5
+  
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+  
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
+  
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+
+plugin_manager:
+  enabled: true
+  image:
+    repository: langgenius/dify-plugin-manager
+    tag: "0.12.5"
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+  
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
+  
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-dify"
+      effect: "NoSchedule"
+
+minio:
+  enabled: false
+
+persistence:
+  type: s3
+  s3:
+    endpoint: "http://minio.dev-dify.ctc.local:9000"
+
+    accessKey: "WL9mYAEsRMiNacDt4jB2"
+    secretKey: "mV1KrqP9ED5Jtqou8fmwjLRJOTe56YX6gQkFQp7V"
+
+    region: "us-east-1"
+    bucketName: "dify-storage"
+
+    addressType: ""
+    useAwsManagedIam: false
+    useAwsS3: false
+
+mail:
+  type: smtp
+  defaultSender: "noreply@dev-dify.ctc.local"
+  smtp:
+    server: "smtp.example.com"
+    port: 587
+    username: "smtpuser"
+    password: "smtppassword"
+    useTls: false
+
+externalPostgres:
+  enabled: true
+  address: "pg-db-primary.dev-postgresql.svc.cluster.local"
+  port: 5432
+  credentials:
+    dify:
+      database: "dify"
+      username: "dify"
+      password: "sotatek"
+      sslmode: "require"
+    plugin_daemon:
+      database: "dify_plugin_daemon"
+      username: "dify"
+      password: "sotatek"
+      sslmode: "require"
+    enterprise:
+      database: "enterprise"
+      username: "dify"
+      password: "sotatek"
+      sslmode: "require"
+    audit:
+      database: "audit"
+      username: "dify"
+      password: "sotatek"
+      sslmode: "require"
+
+
+externalRedis:
+  enabled: true
+  useSSL: false
+
+  host: "redis.dev-redis.svc.cluster.local"
+  port: 6379
+
+  username: ""
+  password: "sotatek"
+  db: 0
+
+  sentinel:
+    enabled: true
+    serviceName: "mymaster"
+
+    nodes: "redis-node-0.redis-headless.dev-redis.svc.cluster.local:26379,redis-node-1.redis-headless.dev-redis.svc.cluster.local:26379,redis-node-2.redis-headless.dev-redis.svc.cluster.local:26379"
+
+    username: ""
+    password: ""
+
+  cluster:
+    enabled: false
+  
+vectorDB:
+  useExternal: true
+  externalType: "qdrant"
+
+  externalQdrant:
+    endpoint: "qdrant.dev-qdrant.svc.cluster.local:6333"
+    apiKey: "487d61df11d7a4c2a3d2308a67dce38e0137414ad1b01a42a2091a7cf5d6fd54"

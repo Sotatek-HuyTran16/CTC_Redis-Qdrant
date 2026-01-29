@@ -102,3 +102,9 @@ sudo systemctl daemon-reload
 
 sudo systemctl enable --now dev-pypiserver
 ```
+
+# 3. Download python package to PyPI server
+
+```bash
+sudo pip download requests==2.32.3 -d /var/lib/dev/pypi/packages
+```

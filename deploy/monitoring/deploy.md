@@ -16,8 +16,8 @@ helm push kube-prometheus-stack-80.14.2.tgz oci://registry.dev-dify.ctc.local:80
 # 3. Install
 
 ```bash
-sudo k8s helm install redis \ 
-  oci://registry.dev-dify.ctc.local:8080/dev/database/redis:24.0.0
+sudo k8s helm install kube-prometheus-stack \ 
+  oci://registry.dev-dify.ctc.local:8080/dev/monitoring/kube-prometheus-stack:80.14.2
   -f values.yaml
-  --plain-http -n dev-redis
+  --plain-http -n dev-monitoring
 ```

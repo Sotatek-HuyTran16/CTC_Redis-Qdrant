@@ -103,6 +103,9 @@ sudo ufw allow out to 10.10.0.0/24
 # external service VM CIDR
 sudo ufw allow in from 10.10.10.0/24
 sudo ufw allow out to 10.10.10.0/24
+
+sudo ufw allow in from 172.16.20.2
+sudo ufw allow out to 172.16.20.2
 ```
 
 # 4. Default (all node)
@@ -110,7 +113,7 @@ sudo ufw allow out to 10.10.10.0/24
 ```bash
 sudo ufw default deny incoming
 
-sudo ufw default deny routed
+sudo ufw default allow routed
 
 sudo ufw default allow outgoing
 ```

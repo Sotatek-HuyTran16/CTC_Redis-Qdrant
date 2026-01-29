@@ -1,0 +1,61 @@
+daemonset:
+  enabled: true
+
+image:
+  registry: docker.io
+  repository: grafana/promtail
+  tag: ""
+
+resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "100Mi"
+      cpu: "100m"
+
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name: "dev-promtail-sa"
+
+automountServiceAccountToken: true
+
+tolerations:
+  - operator: "Exists"
+
+defaultVolumes:
+  - name: run
+    hostPath:
+      path: /run/promtail
+  - name: pods
+    hostPath:
+      path: /var/log/pods
+
+defaultVolumeMounts:
+  - name: run
+    mountPath: /run/promtail
+  - name: pods
+    mountPath: /var/log/pods
+    readOnly: true
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  labels:
+    releases: kube-prometheus-stack
+
+config:
+  enabled: true
+  serverPort: 3101
+
+  clients:
+    - url: http://loki-gateway.dev-monitoring.svc.cluster.local/loki/api/v1/push
+      tenant_id: default
+  
+  positions:
+    filename: /run/promtail/positions.yaml
+

@@ -1,0 +1,28 @@
+replicaCount: 1
+
+operatorImageRepository: docker.io/percona/percona-postgresql-operator
+imagePullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 250m
+    memory: 512Mi
+
+tolerations:
+  - key: "nodepool"
+    operator: "Equal"
+    value: "dev-data"
+    effect: "NoSchedule"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: "nodepool"
+              operator: "In"
+              values:
+                - "dev-data"

@@ -1,0 +1,7 @@
+lvmController:
+  tolerations:
+    - operator: "Exists"
+
+lvmNode:
+  tolerations:
+    - operator: "Exists"

@@ -44,3 +44,17 @@ regctl version
 ```
 pip install ansible
 ```
+
+# 5. Setup no ssh with password
+
+```bash
+# sudo nano /etc/ssh/sshd_config
+PubkeyAuthentication yes
+PasswordAuthentication no
+
+PermitRootLogin prohibit-password
+```
+
+```
+sudo systemctl reload sshd
+```

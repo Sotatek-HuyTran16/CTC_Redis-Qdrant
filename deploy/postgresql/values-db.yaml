@@ -1,0 +1,185 @@
+repository: docker.io/percona/percona-distribution-postgresql
+image: docker.io/percona/percona-distribution-postgresql:17.7
+imagePullPolicy: IfNotPresent
+postgresVersion: 17
+
+users:
+  - name: admin
+    grantPublicSchemaAccess: true
+    options: "SUPERUSER"
+    password:
+      type: ASCII
+    secretName: pg-admin-secret
+
+  - name: user
+    grantPublicSchemaAccess: true
+    options: "SUPERUSER"
+    password:
+      type: ASCII
+    secretName: pg-user-secret
+
+instances:
+- name: instance1
+  replicas: 3
+
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-data"
+      effect: "NoSchedule"
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-data"
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: "app.kubernetes.io/name"
+                  operator: "In"
+                  values:
+                    - pg-db
+            topologyKey: "kubernetes.io/hostname"
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 250m
+      memory: 512Mi
+  
+  dataVolumeClaimSpec:
+    storageClassName: "openebs-lvmpv-wffc"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 6Gi
+  walVolumeClaimSpec:
+    storageClassName: openebs-lvmpv-wffc
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 4Gi
+
+proxy:
+  pgBouncer:
+    replicas: 3
+    image: docker.io/percona/percona-pgbouncer:1.25.0
+
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 250m
+        memory: 512Mi
+    
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: "nodepool"
+                  operator: "In"
+                  values:
+                    - "dev-data"
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: pg-bouncer
+            topologyKey: kubernetes.io/hostname
+    
+    tolerations:
+      - key: "nodepool"
+        operator: "Equal"
+        value: "dev-data"
+        effect: "NoSchedule"
+    
+    securityContext:
+      runAsUser: 1001
+      fsGroup: 1001
+      runAsNonRoot: true
+    
+backups:
+  enabled: true
+  pgbackrest:
+    image: docker.io/percona/percona-pgbackrest:2.57.0
+
+    repoHost:
+      enabled: true
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: "nodepool"
+                    operator: "In"
+                    values:
+                      - "dev-data"
+        
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: pgbackrest
+              topologyKey: kubernetes.io/hostname
+        
+      tolerations:
+        - key: "nodepool"
+          operator: "Equal"
+          value: "dev-data"
+          effect: "NoSchedule"
+      
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+        runAsNonRoot: true
+      
+    manual:
+      repoName: repo1
+      options:
+      - --type=full
+
+    repos:
+      - name: repo1
+        schedules:
+          full: "0 0 * * 0"
+          incremental: "0 1 * * 1-6"
+        volume:
+          volumeClaimSpec:
+            storageClassName: openebs-lvmpv-wffc
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 10Gi
+      
+      - name: repo2
+        schedules:
+          full: "0 0 * * 0"
+          incremental: "0 3 * * 1-6"
+        s3:
+          bucket: pgbackrest-bucket
+          endpoint: minio.dev-dify.ctc.local:9000
+          region: us-east-1
+          accessKey: 1yUePlkzozjqqyd8cklp
+          secretKey: NejP8h3IZkNGn3WFqZwecLSIElZ3leyOpIWI2AzT
+
+pmm:
+  enabled: false

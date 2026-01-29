@@ -3,7 +3,7 @@ alertmanager:
 
   serviceAccount:
     create: true
-    name: ""
+    name: "dev-alertmanager-sa"
     annotations: {}
     automountServiceAccountToken: true
 
@@ -15,6 +15,9 @@ alertmanager:
   
   serviceMonitor:
     selfMonitor: true
+    interval: 30s
+    additionalLabels:
+      release: kube-prometheus-stack
   
   alertmanagerSpec:
     image:
@@ -25,7 +28,7 @@ alertmanager:
     storage:
       volumeClaimTemplate:
         spec:
-          storageClassName: "openebs-lvmpv"
+          storageClassName: "openebs-lvmpv-wffc"
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
@@ -48,3 +51,176 @@ alertmanager:
                   operator: In
                   values:
                     - dev-monitoring
+
+    tolerations:
+      - key: "nodepool"
+        operator: "Equal"
+        value: "dev-monitoring"
+        effect: "NoSchedule"
+
+grafana:
+  enabled: true
+
+  image:
+    registry: docker.io
+    repository: grafana/grafana
+    tag: ""
+
+  serviceAccount:
+    create: true
+    name: "dev-grafana-sa"
+    automountServiceAccountToken: true
+
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: "openebs-lvmpv-wffc"
+    accessModes:
+      - ReadWriteOnce
+    size: 5Gi
+  
+  service:
+    portName: http-web
+  
+  serviceMonitor:
+    enabled: true
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 30s
+  
+  serviceMonitor:
+    enabled: true
+    path: /metrics
+    labels:
+      release: kube-prometheus-stack
+    interval: 30s
+    scheme: http
+    scrapeTimeout: 30s
+
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-monitoring"
+      effect: "NoSchedule"
+  
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: nodepool
+                operator: In
+                values:
+                  - dev-monitoring
+
+prometheusOperator:
+  enabled: true
+
+  livenessProbe:
+    enabled: false
+  
+  readinessProbe:
+    enabled: false
+
+  image:
+    registry: quay.io
+    repository: prometheus-operator/prometheus-operator
+    tag: ""
+
+  serviceAccount:
+    create: true
+    name: "dev-prometheus-operator-sa"
+    automountServiceAccountToken: true
+  
+  service:
+    nodePort: 30080
+    type: ClusterIP
+  
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: kube-prometheus-stack
+    interval: 30s
+  
+  tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-monitoring" 
+      effect: "NoSchedule"
+  
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: nodepool
+                operator: In
+                values:
+                  - dev-monitoring
+  
+  resources:
+    limits:
+      cpu: 250m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+
+prometheus:
+  enabled: true
+
+  serviceAccount:
+    create: true
+    name: "dev-prometheus-sa"
+    automountServiceAccountToken: true
+  
+  service:
+    enabled: true
+    port: 9090
+    targetPort: 9090
+    type: ClusterIP
+  
+  serviceMonitor:
+    selfMonitor: true
+    interval: 30s
+    additionalLabels:
+      release: kube-prometheus-stack
+  
+  prometheusSpec:
+    image:
+      registry: quay.io
+      repository: prometheus/prometheus
+      tag: v3.9.1
+  
+    tolerations:
+      - key: "nodepool"
+        operator: "Equal"
+        value: "dev-monitoring"
+        effect: "NoSchedule"
+    
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: nodepool
+                  operator: In
+                  values:
+                    - dev-monitoring
+    
+    resources:
+      limits:
+        cpu: 250m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+    
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: "openebs-lvmpv-wffc"
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi

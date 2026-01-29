@@ -1,11 +1,11 @@
 image:
   registry: docker.io
   repository: bitnami/redis
-  tag: 8.4.0-debian-12-r0
+  tag: latest
 
 auth:
   enabled: true
-  sentinel: true
+  sentinel: false
 
   existingSecret: "redis-default-user"
   existingSecretPasswordKey: "password"
@@ -15,16 +15,11 @@ auth:
 
   acl:
     enabled: true
-    sentinel: true
+    sentinel: false
     users:
       - username: "admin"
         enabled: "on"
         commands: "+@all"
-        keys: "~*"
-        channels: "&*"
-      - username: "default"
-        enabled: "on"
-        commands: "+@read"
         keys: "~*"
         channels: "&*"
 
@@ -41,10 +36,10 @@ replica:
 
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 250m
+      memory: 512Mi
     limits:
-      cpu: 200m
+      cpu: 250m
       memory: 512Mi
 
   podSecurityContext:
@@ -87,7 +82,7 @@ replica:
   persistence:
     enabled: true
     path: /data
-    storageClass: "dev-redis-openebs-sc"
+    storageClass: "openebs-lvmpv-wffc"
     accessModes:
       - ReadWriteOnce
     size: 20Gi
@@ -113,7 +108,7 @@ sentinel:
   image:
     registry: docker.io
     repository: bitnami/redis-sentinel
-    tag: 8.4.0-debian-12-r0
+    tag: latest
 
 
   masterSet: mymaster
@@ -124,7 +119,7 @@ sentinel:
 
   persistence:
     enabled: true
-    storageClass: "dev-redis-openebs-sc"
+    storageClass: "openebs-lvmpv-wffc"
     accessModes:
       - ReadWriteOnce
     size: 100Mi
@@ -174,7 +169,7 @@ metrics:
   image:
     registry: docker.io
     repository: bitnami/redis-exporter
-    tag: 1.76.0-debian-12-r0
+    tag: latest
   
   containerPorts:
     http: 9121
@@ -226,3 +221,23 @@ metrics:
         metricRelabelings:
           - targetLabel: app
             replacement: sentinel
+
+volumePermissions:
+  enabled: false
+  image:
+    registry: docker.io
+    repository: bitnami/os-shell
+    tag: latest
+
+kubectl:
+  image:
+    registry: docker.io
+    repository: bitnami/kubectl
+    tag: latest
+
+sysctl:
+  enabled: false
+  image:
+    registry: docker.io
+    repository: bitnami/os-shell
+    tag: latest
