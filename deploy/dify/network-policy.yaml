@@ -1,0 +1,258 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: dify-deny-ingress
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dify
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress: []
+  egress:
+  - {}
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traffic-to-dify-api
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app: dify-api
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dify
+    ports:
+    - protocol: TCP
+      port: 5001
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traffic-to-dify-sandbox
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app: dify-sandbox
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-api
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-worker
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-plugin-daemon
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-plugin-manager
+    ports:
+    - protocol: TCP
+      port: 8194
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traffic-to-dify-unstructured
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app: dify-unstructured
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-api
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-worker
+    ports:
+    - protocol: TCP
+      port: 8000
+
+--- 
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traffic-to-dify-ssrf-proxy
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app: dify-ssrf-proxy
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-api
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-worker
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-sandbox
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-plugin-daemon
+    ports:
+    - protocol: TCP
+      port: 3128
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traffic-to-enterprise-api
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app: dify-enterprise
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-enterprise-frontend
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-api
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-worker
+    ports:
+    - protocol: TCP
+      port: 8082
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traffic-to-dify-audit
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app: dify-enterprise-audit
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-enterprise
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-api
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-worker
+    ports:
+    - protocol: TCP
+      port: 8083
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traffic-to-dify-gateway
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app: dify-gateway
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dify
+    ports:
+    - protocol: TCP
+      port: 3080
+    - protocol: TCP
+      port: 3443

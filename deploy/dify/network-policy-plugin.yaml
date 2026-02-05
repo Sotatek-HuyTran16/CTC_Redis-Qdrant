@@ -1,0 +1,162 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traffic-to-plugin-controller
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app: dify-crd
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-api
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-enterprise
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-plugin-manager
+    ports:
+    - protocol: TCP
+      port: 8081
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traffic-to-plugin-manager
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app: dify-plugin-manager
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-api
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-enterprise
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-crd
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-plugin-manager
+    ports:
+    - protocol: TCP
+      port: 8084
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traffic-to-plugin-daemon
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app: dify-plugin-daemon
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-plugin-connector
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-plugin-controller
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-worker
+    ports:
+    - protocol: TCP
+      port: 5002
+    - protocol: TCP
+      port: 5003
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traffic-to-plugin-connector
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app: dify-plugin-connector
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-api
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-enterprise
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-worker
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app: dify-plugin-daemon
+    ports:
+    - protocol: TCP
+      port: 5004
+    - protocol: TCP
+      port: 80
+

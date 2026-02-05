@@ -6,23 +6,26 @@ global:
 
   useTLS: false
 
-  consoleApiDomain: dify-console-api.dev-dify.ctc.local
-  consoleWebDomain: dify-console-web.dev-dify.ctc.local
+  consoleApiDomain: "console.dify.local"
+  consoleWebDomain: "console.dify.local"
+  serviceApiDomain: "api.dify.local"
+  appApiDomain: "app.dify.local"
+  appWebDomain: "app.dify.local"
+  filesDomain: "upload.dify.local"
+  enterpriseDomain: "enterprise.dify.local"
 
-  serviceApiDomain: dify-service-api.dev-dify.ctc.local
-
-  appApiDomain: dify-app-api.dev-dify.ctc.local
-  appWebDomain: dify-app-web.dev-dify.ctc.local
-
-  filesDomain: minio.dev-dify.ctc.local
-
-  enterpriseDomain: dify-enterprise.dev-dify.ctc.local
-
+#  consoleApiDomain: "console.dify.local"
+#  consoleWebDomain: "console.dify.local"
+#  serviceApiDomain: "console.dify.local"
+#  appApiDomain: "console.dify.local"
+#  appWebDomain: "console.dify.local"
+#  filesDomain: "console.dify.local"
+#  enterpriseDomain: "console.dify.local"
 
 api:
   enabled: true
   image:
-    repository: langgenius/dify-api
+    repository: registry.dev-dify.ctc.local/dev/ai/dify-api
     tag: "338e0f74b9ef5a408f71f8d7f11ac2f8b3f0e544"
   
   replicas: 1
@@ -36,7 +39,7 @@ api:
       memory: "512Mi"
     
   serviceAccountName: "dev-dify-api-sa"
-            
+                                                              
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -52,11 +55,22 @@ api:
       operator: "Equal"
       value: "dev-dify"
       effect: "NoSchedule"
+  
+ # webApiCorsAllowOrigins: "http://console.dify.local:30007,http://console.dify.local,http://app.dify.local,http://enterprise.dify.local,http://console.dify.local:3080"
+ # consoleCorsAllowOrigins: "http://console.dify.local:30007,http://console.dify.local,http://app.dify.local,http://enterprise.dify.local,http://console.dify.local:3080"
+
+ # extraEnv:
+ #   - name: "WEB_API_CORS_ALLOW_ORIGINS"
+ ##     value: "http://console.dify.local:30007,http://console.dify.local,http://app.dify.local,http://enterprise.dify.local,http://console.dify.local:3080"
+ #   - name: "CONSOLE_CORS_ALLOW_ORIGINS"
+ #     value: "http://console.dify.local:30007,http://console.dify.local,http://app.dify.local,http://enterprise.dify.local,http://console.dify.local:3080"
+ #   - name: "WEB_API_CORS_ALLOW_CREDENTIALS"
+ #     value: "true"
 
 worker:
   enabled: true
   image:
-    repository: langgenius/dify-api
+    repository: registry.dev-dify.ctc.local/dev/ai/dify-api
     tag: "338e0f74b9ef5a408f71f8d7f11ac2f8b3f0e544"
   
   extraEnv:
@@ -65,7 +79,7 @@ worker:
     - name: "CELERY_SENTINEL_MASTER_NAME"
       value: "mymaster"
     - name: "CELERY_BROKER_URL"
-      value: "sentinel://:sotatek@redis-sentinel.dev-redis.svc.cluster.local:26379/"
+      value: "sentinel://:sotatek@redis.dev-redis.svc.cluster.local:26379/0"
 
   replicas: 3
 
@@ -98,7 +112,7 @@ worker:
 workerBeat:
   enabled: true
   image:
-    repository: langgenius/dify-api
+    repository: registry.dev-dify.ctc.local/dev/ai/dify-api
     tag: "338e0f74b9ef5a408f71f8d7f11ac2f8b3f0e544"
   
   replicas: 1
@@ -130,9 +144,9 @@ workerBeat:
       effect: "NoSchedule"
 
 web:
-  enabled: true
+  enabled: false
   image:
-    repository: langgenius/dify-web
+    repository: registry.dev-dify.ctc.local/dev/ai/dify-web
     tag: "338e0f74b9ef5a408f71f8d7f11ac2f8b3f0e544"
   replicas: 1
 
@@ -162,7 +176,7 @@ web:
 sandbox:
   enabled: true
   image:
-    repository: langgenius/dify-sandbox
+    repository: registry.dev-dify.ctc.local/dev/ai/dify-sandbox
     tag: "0.2.12"
   replicas: 1
 
@@ -176,15 +190,15 @@ sandbox:
   
   serviceAccountName: "dev-dify-sandbox-sa"
 
-#  affinity:
-#    nodeAffinity:
-#      requiredDuringSchedulingIgnoredDuringExecution:
-#        nodeSelectorTerms:
-#          - matchExpressions:
-#              - key: "nodepool"
-#                operator: "In"
-#                values:
-#                  - "dev-dify"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "nodepool"
+                operator: "In"
+                values:
+                  - "dev-dify"
   
   tolerations:
     - key: "nodepool"
@@ -196,19 +210,17 @@ sandbox:
     - name: "PIP_TRUSTED_HOST"
       value: "pypi.dev-dify.ctc.local"
     - name: "PIP_INDEX_URL"
-      value: "http://pypi.dev-dify.ctc.local/simple"
+      value: "http://pypi.dev-dify.ctc.local:8080/simple"
     - name: "NO_PROXY"
       value: "pypi.dev-dify.ctc.local"
 
   pythonRequirements: |
-    fastapi==0.104.1
-    pydantic==2.5.1
-    pandas==2.0.3
+    requests==2.32.3
 
 enterprise:
   enabled: true
   image:
-    repository: langgenius/dify-enterprise
+    repository: registry.dev-dify.ctc.local/dev/ai/dify-enterprise
     tag: "0.12.5"
   replicas: 1
 
@@ -242,8 +254,7 @@ enterprise:
   innerApi:
     enabled: true
   
-  corsOrigins: "*"
-  
+  #corsOrigins: "http://console.dify.local:30007,http://console.dify.local,http://app.dify.local,http://enterprise.dify.local,http://console.dify.local:3080"
   serviceAccountName: "dev-dify-enterprise-api-sa"
 
   licenseMode: "offline"
@@ -251,7 +262,7 @@ enterprise:
 enterpriseAudit:
   enabled: true
   image:
-    repository: langgenius/dify-audit
+    repository: registry.dev-dify.ctc.local/dev/ai/dify-audit
     tag: "0.12.5"
   replicas: 1
 
@@ -287,7 +298,7 @@ enterpriseAudit:
 enterpriseFrontend:
   enabled: true
   image:
-    repository: langgenius/dify-enterprise-frontend
+    repository: registry.dev-dify.ctc.local/dev/ai/dify-enterprise-frontend
     tag: "0.12.3"
   replicas: 1
 
@@ -320,7 +331,7 @@ enterpriseFrontend:
 ssrfProxy:
   enabled: true
   image:
-    repository: ubuntu/squid
+    repository: registry.dev-dify.ctc.local/dev/ai/squid
     tag: "5.2-22.04_beta"
   replicas: 1
 
@@ -353,7 +364,7 @@ ssrfProxy:
 unstructured:
   enabled: true
   image:
-    repository: downloads.unstructured.io/unstructured-io/unstructured-api
+    repository: registry.dev-dify.ctc.local/dev/ai/unstructured-api
     tag: "0.0.70"
   replicas: 1
 
@@ -398,7 +409,7 @@ unstructured:
 plugin_daemon:
   enabled: true
   image:
-    repository: langgenius/dify-plugin-daemon
+    repository: registry.dev-dify.ctc.local/dev/ai/dify-plugin-daemon
     tag: "0.2.0-serverless"
   replicas: 1
 
@@ -433,7 +444,7 @@ plugin_daemon:
 plugin_controller:
   replicas: 1
   image:
-    repository: langgenius/enterprise_plugin-crd
+    repository: registry.dev-dify.ctc.local/dev/ai/enterprise_plugin-crd
     tag: 0.12.5
   
   resources:
@@ -464,7 +475,7 @@ plugin_controller:
 plugin_connector:
   replicas: 1
   image:
-    repository: langgenius/enterprise_plugin-connector
+    repository: registry.dev-dify.ctc.local/dev/ai/enterprise_plugin-connector
     tag: 0.12.5
   
   resources:
@@ -493,18 +504,34 @@ plugin_connector:
 
   insecureImageRepo: true
   imageRepoType: docker
-  imageRepoPrefix: "registry.dev-dify.ctc.local/dify-plugins/"
+  imageRepoPrefix: "registry.dev-dify.ctc.local/dev/ai"
   imageRepoSecret: "harbor-registry-secret"
 
-  gatewayImage: "nginx:1.27.3"
-  shaderImage: "gcr.io/kaniko-project/executor:latest"
-  busyBoxImage: "busybox:latest"
+  gatewayImage: "registry.dev-dify.ctc.local/dev/ai/nginx:1.27.3"
+  shaderImage: "registry.dev-dify.ctc.local/dev/ai/executor:latest"
+  busyBoxImage: "registry.dev-dify.ctc.local/dev/ai/busybox:1.37.0"
+  awsCliImage: "registry.dev-dify.ctc.local/dev/ai/aws-cli:2.33.12"
 
+  generatorConf: |
+    generator:
+      repo:
+      python:
+        pipMirror: "http://pypi.dev-dify.ctc.local:8080/simple"
+        preCompile: true
+        versions:
+          python3.13:
+            langgenius: registry.dev-dify.ctc.local/dev/ai/plugin-build-base-python:3.13
+          python3.12:
+            langgenius: registry.dev-dify.ctc.local/dev/ai/plugin-build-base-python:3.12
+          python3.11:
+            langgenius: registry.dev-dify.ctc.local/dev/ai/plugin-build-base-python:3.11
+          python3.10:
+            langgenius: registry.dev-dify.ctc.local/dev/ai/plugin-build-base-python:3.10
 
 gateway:
   replicas: 1
   image:
-    repository: langgenius/enterprise_gateway
+    repository: registry.dev-dify.ctc.local/dev/ai/enterprise_gateway
     tag: 0.12.5
   
   resources:
@@ -534,7 +561,7 @@ gateway:
 plugin_manager:
   enabled: true
   image:
-    repository: langgenius/dify-plugin-manager
+    repository: registry.dev-dify.ctc.local/dev/ai/dify-plugin-manager
     tag: "0.12.5"
   replicas: 1
 
@@ -647,3 +674,4 @@ vectorDB:
   externalQdrant:
     endpoint: "qdrant.dev-qdrant.svc.cluster.local:6333"
     apiKey: "487d61df11d7a4c2a3d2308a67dce38e0137414ad1b01a42a2091a7cf5d6fd54"
+

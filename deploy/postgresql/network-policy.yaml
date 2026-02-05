@@ -1,0 +1,109 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: dev-postgresql
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dify-to-pgbouncer
+  namespace: dev-postgresql
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: pgbouncer
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dify
+    ports:
+    - protocol: TCP
+      port: 5432
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dify-to-pg-instance
+  namespace: dev-postgresql
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: pg
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dify
+    ports:
+    - protocol: TCP
+      port: 5432
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-pg-instance-internal
+  namespace: dev-postgresql
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: pg
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-postgresql
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/component: pg
+    ports:
+    - protocol: TCP
+      port: 5432
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-repo-host-to-pg-instance
+  namespace: dev-postgresql
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: pg
+  policyTypes:
+    - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-postgresql
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/instance: pg-db
+    ports:
+    - protocol: TCP
+      port: 5432
