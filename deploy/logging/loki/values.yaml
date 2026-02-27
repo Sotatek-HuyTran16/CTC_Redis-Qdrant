@@ -2,8 +2,8 @@ deploymentMode: SimpleScalable
 
 loki:
   image:
-    registry: docker.io
-    repository: grafana/loki
+    registry: registry.dev-dify.ctc.local
+    repository: dev/monitoring/loki
     tag: 3.6.3
   
   auth_enabled: false
@@ -69,6 +69,15 @@ loki:
   ui:
     enabled: true
 
+  podLabels:
+    #app.kubernetes.io/name: dev-loki
+    app.kubernetes.io/role: logging
+    #app.kubernetes.io/instance: dev-loki
+    app.kubernetes.io/version: 3.6.3
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
+
 serviceAccount:
   create: true
   name: dev-loki-sa
@@ -81,12 +90,21 @@ write:
 
   resources:
     requests:
-      memory: "512Mi"
+      memory: "128Mi"
       cpu: "250m"
     limits:
-      memory: "1Gi"
+      memory: "512Mi"
       cpu: "500m"
 
+  podLabels:
+    #app.kubernetes.io/name: dev-loki
+    app.kubernetes.io/role: logging
+    #app.kubernetes.io/instance: dev-loki
+    app.kubernetes.io/version: 3.6.3
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
+  
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -107,7 +125,7 @@ write:
     accessModes:
       - ReadWriteOnce
     size: 5Gi
-    storageClass: "openebs-lvmpv-wffc"
+    storageClass: "dev-monitoring-openebs-sc"
 
 read:
   replicas: 1
@@ -115,12 +133,21 @@ read:
 
   resources:
     requests:
-      memory: "512Mi"
+      memory: "128Mi"
       cpu: "250m"
     limits:
       memory: "512Mi"
-      cpu: "250m"
-  
+      cpu: "500m"
+
+  podLabels:
+    #app.kubernetes.io/name: dev-loki
+    app.kubernetes.io/role: logging
+    #app.kubernetes.io/instance: dev-loki
+    app.kubernetes.io/version: 3.6.3
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
+
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -141,7 +168,7 @@ read:
     accessModes:
       - ReadWriteOnce
     size: 5Gi
-    storageClass: "openebs-lvmpv-wffc"
+    storageClass: "dev-monitoring-openebs-sc"
 
 backend:
   replicas: 1
@@ -149,11 +176,20 @@ backend:
 
   resources:
     requests:
-      memory: "512Mi"
+      memory: "128Mi"
       cpu: "250m"
     limits:
       memory: "512Mi"
-      cpu: "250m"
+      cpu: "500m"
+  
+  podLabels:
+    #app.kubernetes.io/name: dev-loki
+    app.kubernetes.io/role: logging
+    #app.kubernetes.io/instance: dev-loki
+    app.kubernetes.io/version: 3.6.3
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
   
   affinity:
     nodeAffinity:
@@ -175,24 +211,33 @@ backend:
     accessModes:
       - ReadWriteOnce
     size: 5Gi
-    storageClass: "openebs-lvmpv-wffc"
+    storageClass: "dev-monitoring-openebs-sc"
 
 gateway:
   enable: true
 
   image:
-    registry: docker.io
-    repository: nginxinc/nginx-unprivileged
+    registry: registry.dev-dify.ctc.local
+    repository: dev/monitoring/nginx-unprivileged
     tag: 1.29-alpine
   
   resources:
     requests:
-      memory: "256Mi"
+      memory: "128Mi"
       cpu: "100m"
     limits:
-      memory: "512Mi"
+      memory: "256Mi"
       cpu: "250m"
   
+  podLabels:
+    #app.kubernetes.io/name: dev-loki
+    app.kubernetes.io/role: logging
+    #app.kubernetes.io/instance: dev-loki
+    app.kubernetes.io/version: 3.6.3
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
+
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -226,6 +271,15 @@ chunksCache:
       memory: "512Mi"
       cpu: "250m"
 
+  podLabels:
+    #app.kubernetes.io/name: dev-loki
+    app.kubernetes.io/role: logging
+    #app.kubernetes.io/instance: dev-loki
+    app.kubernetes.io/version: 3.6.3
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
+
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -251,6 +305,15 @@ resultsCache:
       memory: "512Mi"
       cpu: "250m"
   
+  podLabels:
+    #app.kubernetes.io/name: dev-loki
+    app.kubernetes.io/role: logging
+    #app.kubernetes.io/instance: dev-loki
+    app.kubernetes.io/version: 3.6.3
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
+
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:

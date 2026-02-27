@@ -1,7 +1,21 @@
-repository: docker.io/percona/percona-distribution-postgresql
-image: docker.io/percona/percona-distribution-postgresql:17.7
+repository: registry.dev-dify.ctc.local/dev/database/percona-distribution-postgresql:17.7
+image: registry.dev-dify.ctc.local/dev/database/percona-distribution-postgresql:17.7
 imagePullPolicy: IfNotPresent
 postgresVersion: 17
+
+nameOverride: "dev-pg-db"
+
+extraLabels:
+  app.kubernetes.io/role: database
+  app.kubernetes.io/project: redis-qdrant
+  app.kubernetes.io/environment: dev
+
+metadata:
+  labels:
+    app.kubernetes.io/role: database
+    app.kubernetes.io/version: 2.8.0
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
 
 users:
   - name: admin
@@ -43,29 +57,41 @@ instances:
           podAffinityTerm:
             labelSelector:
               matchExpressions:
-                - key: "app.kubernetes.io/name"
+                - key: "app.kubernetes.io/component"
                   operator: "In"
                   values:
-                    - pg-db
+                    - pg
             topologyKey: "kubernetes.io/hostname"
+  
+  metadata:
+    labels:
+      app.kubernetes.io/role: database
+      app.kubernetes.io/version: 2.8.0
+      app.kubernetes.io/project: redis-qdrant
+      app.kubernetes.io/environment: dev
 
   resources:
     requests:
       cpu: 250m
-      memory: 512Mi
+      memory: 128Mi
     limits:
-      cpu: 250m
+      cpu: 500m
       memory: 512Mi
   
+  securityContext:
+    runAsUser: 1001
+    fsGroup: 1001
+    runAsNonRoot: true
+  
   dataVolumeClaimSpec:
-    storageClassName: "openebs-lvmpv-wffc"
+    storageClassName: "dev-postgres-openebs-sc"
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 6Gi
   walVolumeClaimSpec:
-    storageClassName: openebs-lvmpv-wffc
+    storageClassName: dev-postgres-openebs-sc
     accessModes:
       - ReadWriteOnce
     resources:
@@ -75,14 +101,14 @@ instances:
 proxy:
   pgBouncer:
     replicas: 3
-    image: docker.io/percona/percona-pgbouncer:1.25.0
-
+    image: registry.dev-dify.ctc.local/dev/database/percona-pgbouncer:1.25.0
+    
     resources:
       requests:
         cpu: 250m
-        memory: 512Mi
+        memory: 128Mi
       limits:
-        cpu: 250m
+        cpu: 500m
         memory: 512Mi
     
     affinity:
@@ -100,7 +126,7 @@ proxy:
           podAffinityTerm:
             labelSelector:
               matchLabels:
-                app.kubernetes.io/name: pg-bouncer
+                app.kubernetes.io/component: pgbouncer
             topologyKey: kubernetes.io/hostname
     
     tolerations:
@@ -117,8 +143,33 @@ proxy:
 backups:
   enabled: true
   pgbackrest:
-    image: docker.io/percona/percona-pgbackrest:2.57.0
+    image: registry.dev-dify.ctc.local/dev/database/percona-pgbackrest:2.57.0
 
+    metadata:
+      labels:
+        app.kubernetes.io/role: database
+        app.kubernetes.io/version: 2.8.0
+        app.kubernetes.io/project: redis-qdrant
+        app.kubernetes.io/environment: dev
+    
+    containers:
+      pgbackrest:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      pgbackrestConfig:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+       
     repoHost:
       enabled: true
       affinity:
@@ -163,7 +214,7 @@ backups:
           incremental: "0 1 * * 1-6"
         volume:
           volumeClaimSpec:
-            storageClassName: openebs-lvmpv-wffc
+            storageClassName: dev-postgres-openebs-sc
             accessModes:
               - ReadWriteOnce
             resources:

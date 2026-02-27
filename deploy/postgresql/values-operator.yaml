@@ -1,14 +1,17 @@
 replicaCount: 1
 
-operatorImageRepository: docker.io/percona/percona-postgresql-operator
+operatorImageRepository: registry.dev-dify.ctc.local
 imagePullPolicy: IfNotPresent
+image: registry.dev-dify.ctc.local/dev/database/percona-postgresql-operator:2.8.0
+
+nameOverride: dev-pg-operator
 
 resources:
   requests:
     cpu: 250m
-    memory: 512Mi
+    memory: 128Mi
   limits:
-    cpu: 250m
+    cpu: 500m
     memory: 512Mi
 
 tolerations:
@@ -26,3 +29,17 @@ affinity:
               operator: "In"
               values:
                 - "dev-data"
+
+additionalLabels:
+  app.kubernetes.io/role: database
+  app.kubernetes.io/version: 2.8.0
+  app.kubernetes.io/managed-by: Helm
+  app.kubernetes.io/project: redis-qdrant
+  app.kubernetes.io/environment: dev
+
+podLabels:
+  app.kubernetes.io/role: database
+  app.kubernetes.io/version: 2.8.0
+  app.kubernetes.io/managed-by: Helm
+  app.kubernetes.io/project: redis-qdrant
+  app.kubernetes.io/environment: dev

@@ -38,8 +38,5 @@ stringData:
 # 4. Install
 
 ```bash
-sudo k8s helm install redis \ 
-  oci://registry.dev-dify.ctc.local:8080/dev/database/redis:24.0.0
-  -f values.yaml
-  --plain-http -n dev-redis
+helm install dev-redis-cluster oci://registry.dev-dify.ctc.local:8080/dev/database/redis:24.0.0 -f values.yaml -n dev-redis
 ```

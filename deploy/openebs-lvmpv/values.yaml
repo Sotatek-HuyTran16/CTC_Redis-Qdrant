@@ -1,7 +1,44 @@
+lvmNode:
+  tolerations:
+    - operator: "Exists"
+  
+  driverRegistrar:
+    image:
+      registry: registry.dev-dify.ctc.local
+      repository: dev/storage/csi-node-driver-registrar
+      tag: v2.13.0
+
 lvmController:
   tolerations:
     - operator: "Exists"
 
-lvmNode:
-  tolerations:
-    - operator: "Exists"
+  resizer:
+    image:
+      registry: registry.dev-dify.ctc.local
+      repository: dev/storage/csi-resizer
+      tag: v1.11.2
+
+  snapshotter:
+    image:
+      registry: registry.dev-dify.ctc.local
+      repository: dev/storage/csi-snapshotter
+      tag: v7.0.0
+      
+  snapshotController:
+    image:
+      registry: registry.dev-dify.ctc.local
+      repository: dev/storage/snapshot-controller
+      tag: v7.0.0
+      
+  provisioner:
+    image:
+      registry: registry.dev-dify.ctc.local
+      repository: dev/storage/csi-provisioner
+      tag: v5.2.0
+
+lvmPlugin:
+  image:
+    registry: registry.dev-dify.ctc.local
+    repository: dev/storage/lvm-driver
+    tag: 1.8.0
+

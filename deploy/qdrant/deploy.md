@@ -28,8 +28,5 @@ stringData:
 # 4. Install
 
 ```bash
-sudo k8s helm install qdrant \ 
-  oci://registry.dev-dify.ctc.local:8080/dev/database/qdrant:1.16.3
-  -f values.yaml
-  --plain-http -n dev-qdrant
+helm install dev-qdrant-cluster oci://registry.dev-dify.ctc.local:8080/dev/database/qdrant:1.16.3 -f values.yaml -n dev-qdrant
 ```

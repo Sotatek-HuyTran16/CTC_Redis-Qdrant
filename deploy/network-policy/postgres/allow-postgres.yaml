@@ -1,0 +1,86 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres-internal
+  namespace: dev-postgresql
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: percona-postgresql
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: percona-postgresql
+    ports:
+    - protocol: TCP
+      port: 5432
+    - protocol: TCP
+      port: 2022
+    - protocol: TCP
+      port: 8008
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: percona-postgresql
+    ports:
+    - protocol: TCP
+      port: 5432
+    - protocol: TCP
+      port: 2022
+    - protocol: TCP
+      port: 8008
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dify-to-pg
+  namespace: dev-postgresql
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: percona-postgresql
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-dify
+    ports:
+    - protocol: TCP
+      port: 5432
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-pg-egress-minio
+  namespace: dev-postgresql
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: percona-postgresql
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 10.10.10.0/24
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 9000
+    

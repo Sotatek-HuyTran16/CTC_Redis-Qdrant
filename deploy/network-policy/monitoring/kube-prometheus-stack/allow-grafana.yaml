@@ -1,0 +1,110 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-grafana-from-ingress
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-grafana
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 3000
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-grafana-to-prometheus
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-grafana
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: prometheus
+    ports:
+    - protocol: TCP
+      port: 9090
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-grafana-to-dns
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-grafana
+      app.kubernetes.io/instance: dev-grafana
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-grafana-to-loki
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-grafana
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: loki
+    ports:
+    - protocol: TCP
+      port: 3100
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-grafana-ingress-from-prometheus
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-grafana
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: prometheus
+    ports:
+    - protocol: TCP
+      port: 3000

@@ -2,9 +2,9 @@ daemonset:
   enabled: true
 
 image:
-  registry: docker.io
-  repository: grafana/promtail
-  tag: ""
+  registry: registry.dev-dify.ctc.local
+  repository: dev/monitoring/promtail
+  tag: "3.5.1"
 
 resources:
     requests:
@@ -53,9 +53,17 @@ config:
   serverPort: 3101
 
   clients:
-    - url: http://loki-gateway.dev-monitoring.svc.cluster.local/loki/api/v1/push
+    - url: http://loki-write.dev-monitoring.svc.cluster.local:3100/loki/api/v1/push
       tenant_id: default
   
   positions:
     filename: /run/promtail/positions.yaml
 
+podLabels:
+  app.kubernetes.io/name: promtail
+  app.kubernetes.io/role: logging
+  app.kubernetes.io/instance: promtail
+  app.kubernetes.io/version: 3.5.1
+  app.kubernetes.io/managed-by: helm
+  app.kubernetes.io/project: redis-qdrant
+  app.kubernetes.io/environment: dev

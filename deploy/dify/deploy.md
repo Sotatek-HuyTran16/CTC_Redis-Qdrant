@@ -164,16 +164,46 @@ PIP_INDEX_URL=http://pypi.dev-dify.ctc.local/simple
 NO_PROXY=pypi.dev-dify.ctc.local
 ```
 
-# 7. Edit configmap dify-gateway-config
+# 7. Edit configmap dify-gateway-config (caddy file) (nodeport)
 
 ```bash
+# 1. Change all the section dify-web-svc to dify-enterprise-frontend-svc
 reverse_proxy http://dify-enterprise-frontend-svc:3000
+
+# 2. Add the header to all the domain
+Access-Control-Allow-Origin  http://console.dify.local:30007
+Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With"
+Access-Control-Allow-Credentials true
+Access-Control-Max-Age 86400
 ```
 
-# 8. Metal LB
+## Continue edit the configmap dify-enterprise-frontend-config
 
-```
-https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/manifests/metallb-native.yaml
+```bash
+# change the URL and add the port
+data:
+  API_URL: http://enterprise.dify.local:30007
+  APP_API_URL: http://app.dify.local:30007
+  AUDIT_LOG_MAX_SEARCH_INTERVAL: '90'
+  CONSOLE_API_URL: http://console.dify.local
+  RELEASE_VERSION: 3.5.6 (Helm)
 ```
 
-{"level":"error","ts":1770201606.982037,"logger":"http.log.error","msg":"dial tcp: lookup dify-web-svc on 10.152.183.224:53: server misbehaving","request":{"remote_ip":"172.16.20.2","remote_port":"53622","client_ip":"172.16.20.2","proto":"HTTP/1.1","method":"GET","host":"console.dify.local:30007","uri":"/","headers":{"Upgrade-Insecure-Requests":["1"],"User-Agent":["Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0"],"Accept":["text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"],"Accept-Encoding":["gzip, deflate"],"Sec-Gpc":["1"],"Connection":["keep-alive"],"Priority":["u=0, i"],"Accept-Language":["en-US,en;q=0.9"]}},"duration":0.001402494,"status":502,"err_id":"m25rsn78h","err_trace":"reverseproxy.statusError (reverseproxy.go:1373)"}
+# 8. Install Metal LB
+
+```bash
+# Link https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/manifests/metallb-native.yaml
+
+k create -f metallb-native.yaml
+```
+
+# 9. Install ingress
+
+```bash
+# Link https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/baremetal/deploy.yaml
+
+k create -f deploy.yaml
+```
+
+

@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-exporter-to-pg
+  namespace: dev-postgresql
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: dev-pg-db
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-monitoring
+    ports:
+    - protocol: TCP
+      port: 9187

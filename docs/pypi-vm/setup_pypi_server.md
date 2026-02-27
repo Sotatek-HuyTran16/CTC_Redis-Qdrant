@@ -39,7 +39,7 @@ sudo useradd -r -s /usr/sbin/nologin dev-pypi-user
 ## Create pypi server working directory
 
 ```
-sudo mkdir -p /var/lib/dev/pypi/packages /var/log/pypiserver.log
+sudo mkdir -p /var/lib/dev/pypi/packages /var/log/pypiserver
 
 sudo chown -R dev-pypi-user:dev-pypi-user /var/lib/dev/pypi /var/log/pypiserver
 ```

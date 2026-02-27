@@ -28,28 +28,10 @@ api:
   
   replicas: 1
 
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-api
-    app.kubernetes.io/instance: dev-dify-api
-
   resources:
     requests:
-      cpu: "250m"
-      memory: "128Mi"
+      cpu: "500m"
+      memory: "512Mi"
     limits:
       cpu: "500m"
       memory: "512Mi"
@@ -97,32 +79,14 @@ worker:
     - name: "CELERY_BROKER_URL"
       value: "sentinel://:sotatek@redis.dev-redis.svc.cluster.local:26379/0"
 
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-worker
-    app.kubernetes.io/instance: dev-dify-worker
-
   replicas: 3
 
   resources:
     requests:
       cpu: "250m"
-      memory: "128Mi"
+      memory: "512Mi"
     limits:
-      cpu: "500m"
+      cpu: "250m"
       memory: "512Mi"
 
   serviceAccountName: "dev-dify-worker-sa"
@@ -151,30 +115,12 @@ workerBeat:
   
   replicas: 1
 
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-worker-beat
-    app.kubernetes.io/instance: dev-dify-worker-beat
-
   resources:
     requests:
       cpu: "250m"
-      memory: "128Mi"
+      memory: "512Mi"
     limits:
-      cpu: "500m"
+      cpu: "250m"
       memory: "512Mi"
 
   serviceAccountName: "dev-dify-worker-beat-sa"
@@ -197,37 +143,17 @@ workerBeat:
 
 web:
   enabled: true
-
   image:
     repository: registry.dev-dify.ctc.local/dev/ai/dify-web
     tag: "338e0f74b9ef5a408f71f8d7f11ac2f8b3f0e544"
-
   replicas: 1
-
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-web
-    app.kubernetes.io/instance: dev-dify-web
 
   resources:
     requests:
       cpu: "250m"
-      memory: "128Mi"
+      memory: "512Mi"
     limits:
-      cpu: "500m"
+      cpu: "250m"
       memory: "512Mi"
   
   affinity:
@@ -255,29 +181,11 @@ sandbox:
   resources:
     requests:
       cpu: "250m"
-      memory: "128Mi"
-    limits:
-      cpu: "500m"
       memory: "512Mi"
-
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
   
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-sandbox
-    app.kubernetes.io/instance: dev-dify-sandbox
-
   serviceAccountName: "dev-dify-sandbox-sa"
 
   affinity:
@@ -314,28 +222,10 @@ enterprise:
     tag: "0.12.5"
   replicas: 1
 
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-enterprise-api
-    app.kubernetes.io/instance: dev-dify-enterprise-api
-
   resources:
     requests:
-      cpu: "250m"
-      memory: "128Mi"
+      cpu: "500m"
+      memory: "512Mi"
     limits:
       cpu: "500m"
       memory: "512Mi"
@@ -374,30 +264,12 @@ enterpriseAudit:
     tag: "0.12.5"
   replicas: 1
 
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-audit
-    app.kubernetes.io/instance: dev-dify-audit
-
   resources:
     requests:
       cpu: "250m"
-      memory: "128Mi"
+      memory: "512Mi"
     limits:
-      cpu: "500m"
+      cpu: "250m"
       memory: "512Mi"
   
   affinity:
@@ -428,30 +300,12 @@ enterpriseFrontend:
     tag: "0.12.3"
   replicas: 1
 
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-enterprise-web
-    app.kubernetes.io/instance: dev-dify-enterprise-web
-
   resources:
     requests:
       cpu: "250m"
-      memory: "128Mi"
+      memory: "512Mi"
     limits:
-      cpu: "500m"
+      cpu: "250m"
       memory: "512Mi"
 
   serviceAccountName: "dev-dify-enterprise-web-sa"
@@ -479,30 +333,12 @@ ssrfProxy:
     tag: "5.2-22.04_beta"
   replicas: 1
 
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-ssrf-proxy
-    app.kubernetes.io/instance: dev-dify-ssrf-proxy
-
   resources:
     requests:
       cpu: "250m"
-      memory: "128Mi"
+      memory: "512Mi"
     limits:
-      cpu: "500m"
+      cpu: "250m"
       memory: "512Mi"
 
   serviceAccountName: "dev-dify-ssrf-proxy-sa"
@@ -530,30 +366,12 @@ unstructured:
     tag: "0.0.70"
   replicas: 0
 
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-unstructured
-    app.kubernetes.io/instance: dev-dify-unstructured
-
   resources:
     requests:
       cpu: "250m"
-      memory: "128Mi"
+      memory: "512Mi"
     limits:
-      cpu: "500m"
+      cpu: "250m"
       memory: "512Mi"
 
   serviceAccountName: "dev-dify-unstructured-sa"
@@ -593,30 +411,12 @@ plugin_daemon:
     tag: "0.2.0-serverless"
   replicas: 1
 
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-plugin-daemon
-    app.kubernetes.io/instance: dev-dify-plugin-daemon
-
   resources:
     requests:
       cpu: "250m"
-      memory: "128Mi"
+      memory: "512Mi"
     limits:
-      cpu: "500m"
+      cpu: "250m"
       memory: "512Mi"
   
   affinity:
@@ -638,36 +438,19 @@ plugin_daemon:
   serviceType: "NodePort"
   adminApiEnabled: true
 
+
 plugin_controller:
   replicas: 1
   image:
     repository: registry.dev-dify.ctc.local/dev/ai/enterprise_plugin-crd
     tag: 0.12.5
   
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-plugin-controller
-    app.kubernetes.io/instance: dev-dify-plugin-controller
-
   resources:
     requests:
       cpu: "250m"
-      memory: "128Mi"
+      memory: "512Mi"
     limits:
-      cpu: "500m"
+      cpu: "250m"
       memory: "512Mi"
   
   affinity:
@@ -686,6 +469,7 @@ plugin_controller:
       value: "dev-dify"
       effect: "NoSchedule"
 
+
 plugin_connector:
   replicas: 1
   image:
@@ -695,28 +479,10 @@ plugin_connector:
   resources:
     requests:
       cpu: "250m"
-      memory: "128Mi"
-    limits:
-      cpu: "500m"
       memory: "512Mi"
-
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-plugin-connector
-    app.kubernetes.io/instance: dev-dify-plugin-connector
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
 
   affinity:
     nodeAffinity:
@@ -762,35 +528,16 @@ plugin_connector:
 
 gateway:
   replicas: 1
-
   image:
     repository: registry.dev-dify.ctc.local/dev/ai/enterprise_gateway
     tag: 0.12.5
   
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-gateway
-    app.kubernetes.io/instance: dev-dify-gateway
-
   resources:
     requests:
-      cpu: "100m"
-      memory: "128Mi"
+      cpu: "250m"
+      memory: "512Mi"
     limits:
-      cpu: "500m"
+      cpu: "250m"
       memory: "512Mi"
   
   affinity:
@@ -816,30 +563,12 @@ plugin_manager:
     tag: "0.12.5"
   replicas: 1
 
-  additionalLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-  
-  podLabels:
-    app.kubernetes.io/role: dify-app
-    app.kubernetes.io/project: redis-qdrant
-    app.kubernetes.io/environment: dev
-    app.kubernetes.io/version: 1.8.2
-    app.kubernetes.io/managed-by: Helm
-
-  selectorLabels:
-    app.kubernetes.io/name: dev-dify-plugin-manager
-    app.kubernetes.io/instance: dev-dify-plugin-manager
-
   resources:
     requests:
       cpu: "250m"
-      memory: "128Mi"
+      memory: "512Mi"
     limits:
-      cpu: "500m"
+      cpu: "250m"
       memory: "512Mi"
   
   affinity:
@@ -943,4 +672,3 @@ vectorDB:
   externalQdrant:
     endpoint: "qdrant.dev-qdrant.svc.cluster.local:6333"
     apiKey: "487d61df11d7a4c2a3d2308a67dce38e0137414ad1b01a42a2091a7cf5d6fd54"
-

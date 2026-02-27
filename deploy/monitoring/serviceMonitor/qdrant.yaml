@@ -1,0 +1,53 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  annotations:
+    meta.helm.sh/release-name: dev-qdrant-cluster
+    meta.helm.sh/release-namespace: dev-qdrant
+  labels:
+    app: dev-qdrant-cluster
+    app.kubernetes.io/environment: dev
+    app.kubernetes.io/instance: dev-qdrant-cluster
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: dev-qdrant-cluster
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/role: database
+    app.kubernetes.io/version: 1.16.3
+    helm.sh/chart: qdrant-1.16.3
+    release: kube-prometheus-stack
+  name: dev-qdrant-cluster
+  namespace: dev-monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+    - dev-qdrant
+  
+  selector:
+    matchLabels:
+      app: dev-qdrant-cluster
+      app.kubernetes.io/name: dev-qdrant-cluster
+
+  endpoints:
+    - authorization:
+        credentials:
+          key: QDRANT__SERVICE__API_KEY
+          name: dev-qdrant-api-key
+        type: Bearer
+      honorLabels: true
+      interval: 30s
+      path: /metrics
+      port: http
+      scheme: http
+      scrapeTimeout: 10s
+
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dev-qdrant-api-key
+  namespace: dev-monitoring
+type: Opaque
+stringData:
+  QDRANT__SERVICE__API_KEY: 487d61df11d7a4c2a3d2308a67dce38e0137414ad1b01a42a2091a7cf5d6fd54

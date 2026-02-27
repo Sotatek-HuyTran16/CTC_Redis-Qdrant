@@ -1,0 +1,108 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: qdrant-allow-cluster-internal
+  namespace: dev-qdrant
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-qdrant-cluster
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: dev-qdrant-cluster
+      ports:
+        - protocol: TCP
+          port: 6335
+        - protocol: TCP
+          port: 6334
+        - protocol: TCP
+          port: 6333
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: dev-qdrant-cluster
+      ports:
+        - protocol: TCP
+          port: 6335
+        - protocol: TCP
+          port: 6334
+        - protocol: TCP
+          port: 6333
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: qdrant-allow-dify
+  namespace: dev-qdrant
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-qdrant-cluster
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: dev-dify
+      ports:
+        - protocol: TCP
+          port: 6333
+        - protocol: TCP
+          port: 6334
+        - protocol: TCP
+          port: 6335
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: qdrant-allow-prometheus
+  namespace: dev-qdrant
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-qdrant-cluster
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: dev-monitoring
+      ports:
+        - protocol: TCP
+          port: 6333
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: qdrant-allow-dns
+  namespace: dev-qdrant
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-qdrant-cluster
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

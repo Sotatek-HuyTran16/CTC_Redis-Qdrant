@@ -1,0 +1,121 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-promtail-to-dns
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: promtail
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-promtail-to-loki-pods
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: promtail
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: loki
+    ports:
+    - protocol: TCP
+      port: 3100
+    - protocol: TCP
+      port: 80
+    # - protocol: TCP
+    #   port: 443
+  # - to:
+  #   - ipBlock:
+  #       cidr: 10.1.0.0/16
+  #   ports:
+  #   - protocol: TCP
+  #     port: 3100
+  #   - protocol: TCP
+  #     port: 80
+  #   - protocol: TCP
+  #     port: 443
+  # - to:
+  #   - ipBlock:
+  #       cidr: 10.10.0.0/24
+  #   ports:
+  #   - protocol: TCP
+  #     port: 3100
+  #   - protocol: TCP
+  #     port: 80
+  #   - protocol: TCP
+  #     port: 443
+  # - to:
+  #   - ipBlock:
+  #       cidr: 10.152.183.0/24
+  #   ports:
+  #   - protocol: TCP
+  #     port: 3100
+  #   - protocol: TCP
+  #     port: 80
+  #   - protocol: TCP
+  #     port: 443
+
+# ---
+
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-promtail-from-loki
+#   namespace: dev-monitoring
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: promtail
+#   policyTypes:
+#   - Ingress
+#   ingress:
+#   - from:
+#     - podSelector:
+#         matchLabels:
+#           app.kubernetes.io/name: loki
+#     ports:
+#     - protocol: TCP
+#       port: 3101
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-promtail-from-prometheus
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: promtail
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: prometheus
+    ports:
+    - protocol: TCP
+      port: 3101

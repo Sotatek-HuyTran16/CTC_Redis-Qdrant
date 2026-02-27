@@ -1,0 +1,233 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-egress-exporter
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector: {} 
+    ports:
+    - protocol: TCP
+      port: 9100
+    - protocol: TCP
+      port: 9187
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 9093
+    - protocol: TCP
+      port: 3100
+    - protocol: TCP
+      port: 9080
+    - protocol: TCP
+      port: 3101
+
+---
+
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-prometheus-scrape-agent
+#   namespace: dev-monitoring
+# spec:
+#   podSelector: {}
+#   policyTypes:
+#   - Ingress
+#   ingress:
+#   - from:
+#     - podSelector:
+#         matchLabels:
+#           app.kubernetes.io/name: prometheus
+#     ports:
+#     - protocol: TCP
+#       port: 9100
+#     - protocol: TCP
+#       port: 9187
+#     - protocol: TCP
+#       port: 8080
+#     - protocol: TCP
+#       port: 9093
+#     - protocol: TCP
+#       port: 3100
+#     - protocol: TCP
+#       port: 9080
+#     - protocol: TCP
+#       port: 3000
+#     - protocol: TCP
+#       port: 3101
+
+# ---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-to-dns
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 9153
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-to-apiserver
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: default
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 6443
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-to-kubelet
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 10.10.0.0/24
+    ports:
+    - protocol: TCP
+      port: 10250
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-to-external-service
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 10.10.10.0/24
+    ports:
+    - protocol: TCP
+      port: 9119 # bind
+    - protocol: TCP
+      port: 9090 # harbor
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-to-exporter-on-node
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 10.10.0.0/24
+    ports:
+    - protocol: TCP
+      port: 9100
+    - protocol: TCP
+      port: 10257
+    - protocol: TCP
+      port: 2381
+
+# ---
+
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-prometheus-to-pod-range
+#   namespace: dev-monitoring
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: prometheus
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - to:
+#     - ipBlock:
+#         cidr: 10.1.0.0/16
+#     ports:
+#     - protocol: TCP
+#       port: 3000
+#     - protocol: TCP
+#       port: 10250
+#     - protocol: TCP
+#       port: 9121
+#     - protocol: TCP
+#       port: 9187
+#     - protocol: TCP
+#       port: 3101
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-to-qdrant
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: dev-qdrant
+      ports:
+        - protocol: TCP
+          port: 6333

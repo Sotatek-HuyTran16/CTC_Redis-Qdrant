@@ -1,0 +1,75 @@
+image:
+  registry: registry.dev-dify.ctc.local
+  repository: dev/monitoring/postgres-exporter
+  tag: v0.19.0
+
+nameOverride: "dev-pg-exporter"
+
+service:
+  type: ClusterIP
+  port: 9187
+  targetPort: 9187
+  name: http
+
+serviceMonitor:
+  enabled: true
+  apiVersion: "monitoring.coreos.com/v1"
+  namespace: dev-monitoring
+  telemetryPath: /metrics
+  interval: 30s
+  timeout: 10s
+  labels:
+    release: kube-prometheus-stack
+
+resources:
+   requests:
+       cpu: 200m
+       memory: 128Mi
+   limits:
+       cpu: 500m
+       memory: 512Mi
+
+config:
+  datasource:
+    host: pg-db-primary.dev-postgresql.svc.cluster.local
+    user: postgres
+    password: sotatek
+    database: 'postgres'
+
+tolerations:
+    - key: "nodepool"
+      operator: "Equal"
+      value: "dev-monitoring"
+      effect: "NoSchedule"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: nodepool
+            operator: In
+            values:
+              - "dev-monitoring"
+
+podLabels:
+  app.kubernetes.io/role: monitoring
+  app.kubernetes.io/version: 0.87.1
+  app.kubernetes.io/managed-by: Helm
+  app.kubernetes.io/project: redis-qdrant
+  app.kubernetes.io/environment: dev
+
+deployment:
+  labels:
+    app.kubernetes.io/role: monitoring
+    app.kubernetes.io/version: 0.87.1
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
+
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name: dev-pg-exporter-sa

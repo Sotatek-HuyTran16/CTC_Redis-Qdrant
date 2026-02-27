@@ -16,8 +16,7 @@ helm push loki-6.49.0.tgz oci://registry.dev-dify.ctc.local:8080/dev/monitoring 
 # 3. Install
 
 ```bash
-sudo k8s helm install loki \ 
-  oci://registry.dev-dify.ctc.local:8080/dev/monitoring/loki:6.49.0
+sudo k8s helm install loki oci://registry.dev-dify.ctc.local:8080/dev/monitoring/loki:6.49.0
   -f values.yaml
   --plain-http -n dev-monitoring
 ```

@@ -388,15 +388,17 @@ k get pod -n openebs
 
 ## Create storage class
 
-```
+```bash
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: openebs-lvmpv
+  name: openebs-lvmpv-wffc
 parameters:
-  storage: "lvm"
-  volgroup: "lvm-openebs"
+  storage: lvm
+  volgroup: lvm-openebs
 provisioner: local.csi.openebs.io
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
 ```
 
 ## Verify

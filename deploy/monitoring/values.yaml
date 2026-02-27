@@ -1,5 +1,21 @@
+crds:
+  enabled: true
+  upgradeJob:
+    enabled: false
+    image:
+      busybox:
+        registry: registry.dev-dify.ctc.local
+        repository: dev/monitoring/busybox
+        tag: "1.31.1"
+
 alertmanager:
   enabled: true
+
+  additionalLabels:
+    app.kubernetes.io/role: monitoring
+    app.kubernetes.io/version: 0.87.1
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
 
   serviceAccount:
     create: true
@@ -20,15 +36,22 @@ alertmanager:
       release: kube-prometheus-stack
   
   alertmanagerSpec:
+    podMetadata:
+      labels:
+        app.kubernetes.io/role: monitoring
+        app.kubernetes.io/version: 0.87.1
+        app.kubernetes.io/project: redis-qdrant
+        app.kubernetes.io/environment: dev
+
     image:
-      registry: quay.io
-      repository: prometheus/alertmanager
+      registry: registry.dev-dify.ctc.local
+      repository: dev/monitoring/alertmanager
       tag: v0.30.1
     
     storage:
       volumeClaimTemplate:
         spec:
-          storageClassName: "openebs-lvmpv-wffc"
+          storageClassName: "dev-monitoring-openebs-sc"
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
@@ -40,7 +63,7 @@ alertmanager:
         memory: 512Mi
       requests:
         cpu: 250m
-        memory: 256Mi
+        memory: 128Mi
     
     affinity:
       nodeAffinity:
@@ -62,31 +85,51 @@ grafana:
   enabled: true
 
   image:
-    registry: docker.io
-    repository: grafana/grafana
-    tag: ""
+    registry: registry.dev-dify.ctc.local
+    repository: dev/monitoring/grafana
+    tag: "12.3.1"
+
+  nameOverride: "dev-grafana"
+
+  overrideReleaseName: "dev-grafana"
 
   serviceAccount:
     create: true
     name: "dev-grafana-sa"
     automountServiceAccountToken: true
 
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 128Mi
+
+  labels:
+    app.kubernetes.io/role: monitoring
+    app.kubernetes.io/version: 0.87.1
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
+    app.kubernetes.io/managed-by: Helm
+
+  podLabels:
+    app.kubernetes.io/role: monitoring
+    app.kubernetes.io/version: 0.87.1
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
+    app.kubernetes.io/managed-by: Helm
+
   persistence:
     enabled: true
     type: pvc
-    storageClassName: "openebs-lvmpv-wffc"
+    storageClassName: "dev-monitoring-openebs-sc"
     accessModes:
       - ReadWriteOnce
     size: 5Gi
   
   service:
     portName: http-web
-  
-  serviceMonitor:
-    enabled: true
-    path: /metrics
-    interval: 30s
-    scrapeTimeout: 30s
   
   serviceMonitor:
     enabled: true
@@ -122,10 +165,32 @@ prometheusOperator:
   readinessProbe:
     enabled: false
 
+  admissionWebhooks:
+    enabled: true
+    deployment:
+      enabled: false
+    patch:
+      enabled: true
+      image:
+        registry: registry.dev-dify.ctc.local
+        repository: dev/monitoring/kube-webhook-certgen
+        tag: 1.7.4
+    
   image:
-    registry: quay.io
-    repository: prometheus-operator/prometheus-operator
-    tag: ""
+    registry: registry.dev-dify.ctc.local
+    repository: dev/monitoring/prometheus-operator
+    tag: "v0.87.1"
+  
+  prometheusConfigReloader:
+    image:
+      registry: registry.dev-dify.ctc.local
+      repository: dev/monitoring/prometheus-config-reloader
+      tag: "v0.87.1"
+  
+  thanosImage:
+    registry: registry.dev-dify.ctc.local
+    repository: dev/monitoring/thanos
+    tag: "v0.40.1"
 
   serviceAccount:
     create: true
@@ -160,11 +225,29 @@ prometheusOperator:
   
   resources:
     limits:
-      cpu: 250m
+      cpu: 500m
       memory: 512Mi
     requests:
       cpu: 250m
-      memory: 512Mi
+      memory: 128Mi
+  
+  labels:
+    app.kubernetes.io/name: dev-prometheus-operator
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
+    app.kubernetes.io/instance: dev-prometheus-operator
+    app.kubernetes.io/version: 0.87.1
+    app.kubernetes.io/role: monitoring
+    app.kubernetes.io/managed-by: Helm
+  
+  podLabels:
+    app.kubernetes.io/name: dev-prometheus-operator
+    app.kubernetes.io/instance: dev-prometheus-operator
+    app.kubernetes.io/version: 0.87.1
+    app.kubernetes.io/role: monitoring
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
+    app.kubernetes.io/managed-by: Helm
 
 prometheus:
   enabled: true
@@ -186,12 +269,25 @@ prometheus:
     additionalLabels:
       release: kube-prometheus-stack
   
+  additionalLabels:
+    app.kubernetes.io/version: 0.87.1
+    app.kubernetes.io/role: monitoring
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/environment: dev
+
   prometheusSpec:
     image:
-      registry: quay.io
-      repository: prometheus/prometheus
+      registry: registry.dev-dify.ctc.local
+      repository: dev/monitoring/prometheus
       tag: v3.9.1
   
+    podMetadata:
+      labels:
+        app.kubernetes.io/version: 0.87.1
+        app.kubernetes.io/project: redis-qdrant
+        app.kubernetes.io/environment: dev
+        app.kubernetes.io/role: monitoring
+
     tolerations:
       - key: "nodepool"
         operator: "Equal"
@@ -208,19 +304,69 @@ prometheus:
                   values:
                     - dev-monitoring
     
+    retention: 1d
+    retentionSize: 9GiB
+
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+
+    tsdb:
+      outOfOrderTimeWindow: 1h
+
     resources:
       limits:
-        cpu: 250m
+        cpu: 500m
         memory: 512Mi
       requests:
         cpu: 250m
-        memory: 512Mi
+        memory: 128Mi
     
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: "openebs-lvmpv-wffc"
+          storageClassName: "dev-monitoring-openebs-sc"
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 5Gi
+              storage: 10Gi
+
+thanosRuler:
+  enabled: false
+
+prometheus-node-exporter:
+  image:
+    registry: registry.dev-dify.ctc.local
+    repository: dev/monitoring/node-exporter
+    tag: "v1.10.2"
+
+kube-proxy:
+  enabled: true
+  endpoints:
+    - 10.10.0.10
+    - 10.10.0.11
+    - 10.10.0.12
+    - 10.10.0.13
+    - 10.10.0.14
+    - 10.10.0.15
+    - 10.10.0.16
+    - 10.10.0.17
+
+kubeControllerManager:
+  endpoints:
+    - 10.10.0.10
+
+kubeEtcd:
+  enabled: false
+  endpoints:
+    - 10.10.0.10
+
+kubeScheduler:
+  enabled: false
+  endpoints:
+    - 10.10.0.10
+
+coreDns:
+  service:
+    selector:
+      app.kubernetes.io/name: coredns

@@ -19,15 +19,9 @@ helm push pg-db-2.8.0.tgz oci://registry.dev-dify.ctc.local:8080/dev/database/ -
 # 3. Install
 
 ```bash
-sudo k8s helm install pg-operator \ 
-  oci://registry.dev-dify.ctc.local:8080/dev/database/pg-operator:2.8.0
-  -f pg-operator-values.yaml
-  --plain-http -n dev-postgresql
+helm install dev-pg-operator oci://registry.dev-dify.ctc.local:8080/dev/database/pg-operator:2.8.0-custom.20260226 -f values-operator.yaml -n dev-postgresql
 ```
 
 ```bash
-sudo k8s helm install pg-db \ 
-  oci://registry.dev-dify.ctc.local:8080/dev/database/pg-db:2.8.0
-  -f pg-db-values.yaml
-  --plain-http -n dev-postgresql
+helm install dev-pg-db oci://registry.dev-dify.ctc.local:8080/dev/database/pg-db:2.8.0-custom.20260226 -f values-db.yaml -n dev-postgresql
 ```

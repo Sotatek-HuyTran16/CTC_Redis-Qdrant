@@ -1,7 +1,13 @@
+global:
+  security:
+    allowInsecureImages: true
+
+nameOverride: "dev-redis-cluster"
+
 image:
-  registry: docker.io
-  repository: bitnami/redis
-  tag: latest
+  registry: registry.dev-dify.ctc.local
+  repository: dev/database/redis
+  tag: 8.2.1-debian-12-r0
 
 auth:
   enabled: true
@@ -41,6 +47,13 @@ replica:
     limits:
       cpu: 250m
       memory: 512Mi
+
+  podLabels:
+    app.kubernetes.io/role: database
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/project: redis-qdrant
+    app.kubernetes.io/version: 8.4.0
+    app.kubernetes.io/environment: dev
 
   podSecurityContext:
     enabled: true
@@ -82,7 +95,7 @@ replica:
   persistence:
     enabled: true
     path: /data
-    storageClass: "openebs-lvmpv-wffc"
+    storageClass: "dev-redis-openebs-sc"
     accessModes:
       - ReadWriteOnce
     size: 20Gi
@@ -99,18 +112,17 @@ replica:
     nodePorts:
       redis: ""
    
-#  serviceAccount:
-#    create: true
-#    name: "dev-redis-sa"
+  serviceAccount:
+    create: true
+    name: "dev-redis-sa"
 
 sentinel:
   enabled: true
   image:
-    registry: docker.io
-    repository: bitnami/redis-sentinel
-    tag: latest
-
-
+    registry: registry.dev-dify.ctc.local
+    repository: dev/database/redis-sentinel
+    tag: 8.2.1-debian-12-r0
+    
   masterSet: mymaster
   quorum: 2
 
@@ -119,7 +131,7 @@ sentinel:
 
   persistence:
     enabled: true
-    storageClass: "openebs-lvmpv-wffc"
+    storageClass: "dev-redis-openebs-sc"
     accessModes:
       - ReadWriteOnce
     size: 100Mi
@@ -167,9 +179,9 @@ rbac:
 metrics:
   enabled: true
   image:
-    registry: docker.io
-    repository: bitnami/redis-exporter
-    tag: latest
+    registry: registry.dev-dify.ctc.local
+    repository: dev/database/redis-exporter
+    tag: 1.76.0-debian-12-r0
   
   containerPorts:
     http: 9121
@@ -225,19 +237,19 @@ metrics:
 volumePermissions:
   enabled: false
   image:
-    registry: docker.io
-    repository: bitnami/os-shell
-    tag: latest
+    registry: registry.dev-dify.ctc.local
+    repository: dev/database/os-shell
+    tag: 12-debian-12-r51
 
 kubectl:
   image:
-    registry: docker.io
-    repository: bitnami/kubectl
-    tag: latest
+    registry: registry.dev-dify.ctc.local
+    repository: dev/database/kubectl
+    tag: 1.33.4-debian-12-r0
 
 sysctl:
   enabled: false
   image:
-    registry: docker.io
-    repository: bitnami/os-shell
-    tag: latest
+    registry: registry.dev-dify.ctc.local
+    repository: dev/database/os-shell
+    tag: 12-debian-12-r51

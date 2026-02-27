@@ -1,7 +1,9 @@
 replicaCount: 3
 
+nameOverride: "dev-qdrant-cluster"
+
 image:
-  repository: docker.io/qdrant/qdrant
+  repository: registry.dev-dify.ctc.local/dev/vector/qdrant
   tag: "v1.16.3"
   pullPolicy: IfNotPresent
 
@@ -10,11 +12,25 @@ service:
 
 resources:
   requests:
-    memory: "512Mi"
-    cpu: "250m"
+    memory: "128Mi"
+    cpu: "200m"
   limits:
     memory: "512Mi"
-    cpu: "250m"
+    cpu: "500m"
+
+additionalLabels:
+  app.kubernetes.io/role: database
+  app.kubernetes.io/version: 1.16.3
+  app.kubernetes.io/managed-by: Helm
+  app.kubernetes.io/project: redis-qdrant
+  app.kubernetes.io/environment: dev
+
+podLabels:
+  app.kubernetes.io/role: database
+  app.kubernetes.io/version: 1.16.3
+  app.kubernetes.io/managed-by: Helm
+  app.kubernetes.io/project: redis-qdrant
+  app.kubernetes.io/environment: dev
 
 tolerations:
   - key: "nodepool"
@@ -44,7 +60,7 @@ affinity:
 persistence:
   accessModes: ["ReadWriteOnce"]
   size: 10Gi
-  storageClassName: "openebs-lvmpv-wffc"
+  storageClassName: "dev-qdrant-openebs-sc"
 
 config:
   cluster:
@@ -63,6 +79,8 @@ metrics:
     scrapeInterval: 30s
     targetPort: http
     targetPath: "/metrics"
+    additionalLabels:
+      release: kube-prometheus-stack
 
 apiKey:
   valueFrom:
