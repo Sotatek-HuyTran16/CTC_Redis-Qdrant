@@ -1,0 +1,319 @@
+########################
+### Ingress
+########################
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-enterprise-api-from-gateway
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-enterprise-api
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-gateway
+    ports:
+    - protocol: TCP
+      port: 8082
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-enterprise-api-from-api
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-enterprise-api
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-api
+    ports:
+    - protocol: TCP
+      port: 8082
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-enterprise-api-from-web
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-enterprise-api
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-web
+    ports:
+    - protocol: TCP
+      port: 8082
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-enterprise-api-from-web-enterprise
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-enterprise-api
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-enterprise-web
+    ports:
+    - protocol: TCP
+      port: 8082
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-enterprise-api-from-plugin-manager
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-enterprise-api
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-plugin-manager
+    ports:
+    - protocol: TCP
+      port: 9000
+    - protocol: UDP
+      port: 9000
+    - protocol: TCP
+      port: 8082
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-enterprise-api-liveness-from-kubelet
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-enterprise-api
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 10.10.0.0/24
+    ports:
+    - protocol: TCP
+      port: 8082
+  - from:
+    - ipBlock:
+        cidr: 10.1.0.0/16
+    ports:
+    - protocol: TCP
+      port: 8082
+  - from:
+    - ipBlock:
+        cidr: 10.152.183.0/24
+    ports:
+    - protocol: TCP
+      port: 8082
+
+---
+
+########################
+### Egress
+########################
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-enterprise-api-to-audit
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-enterprise-api
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-audit
+    ports:
+    - protocol: TCP
+      port: 8083
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-enterprise-api-to-database
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-enterprise-api
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-postgresql
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-qdrant
+    ports:
+    - protocol: TCP
+      port: 6333
+  - to:
+    - ipBlock:
+        cidr: 10.10.10.0/24
+    ports:
+    - protocol: TCP
+      port: 9000 # minio
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-enterprise-api-to-plugin-controller
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-enterprise-api
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-plugin-controller
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-enterprise-api-to-internet
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-enterprise-api
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-enterprise-api-to-plugin-manager
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-enterprise-api
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-plugin-manager
+    ports:
+    - protocol: TCP
+      port: 9084
+    - protocol: UDP
+      port: 9084
+    - protocol: TCP
+      port: 8084
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-enterprise-api-liveness-from-kubelet-egress
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-enterprise-api
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 10.10.0.0/24
+    ports:
+    - protocol: TCP
+      port: 8082
+  - to:
+    - ipBlock:
+        cidr: 10.1.0.0/16
+    ports:
+    - protocol: TCP
+      port: 8082
+  - to:
+    - ipBlock:
+        cidr: 10.152.183.0/24
+    ports:
+    - protocol: TCP
+      port: 8082
+
+---
+

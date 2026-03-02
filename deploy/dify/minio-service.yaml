@@ -6,3 +6,14 @@ metadata:
 spec:
   type: ExternalName
   externalName: minio.dev-dify.ctc.local
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-dify-minio
+  namespace: dev-dify
+spec:
+  type: ExternalName
+  externalName: minio.dev-dify.ctc.local

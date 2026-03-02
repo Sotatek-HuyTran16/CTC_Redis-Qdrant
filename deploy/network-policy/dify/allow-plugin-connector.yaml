@@ -1,0 +1,114 @@
+########################
+### Ingress
+########################
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-plugin-connector-from-api
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-plugin-connector
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-api
+    ports:
+    - protocol: TCP
+      port: 5004
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-plugin-connector-from-enterprise-api
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-plugin-connector
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-enterprise-api
+    ports:
+    - protocol: TCP
+      port: 5004
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-plugin-connector-from-plugin-daemon
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-plugin-connector
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-plugin-daemon
+    ports:
+    - protocol: TCP
+      port: 5004
+
+---
+
+########################
+### Egress
+########################
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-plugin-connector-to-internet
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-plugin-connector
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-plugin-connector-to-minio
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-plugin-connector
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 10.10.10.0/24
+    ports:
+    - protocol: TCP
+      port: 9000

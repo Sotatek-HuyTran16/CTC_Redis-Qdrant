@@ -1,0 +1,62 @@
+########################
+### Ingress
+########################
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-plugin-controller-from-api
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-plugin-controller
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-api
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-plugin-controller-from-enterprise-api
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-plugin-controller
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-enterprise-api
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-plugin-controller-from-plugin-manager
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-plugin-controller
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-dify-plugin-manager
+
+########################
+### Egress
+########################

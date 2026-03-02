@@ -80,8 +80,12 @@ instances:
   
   securityContext:
     runAsUser: 1001
-    fsGroup: 1001
+    runAsGroup: 1001
     runAsNonRoot: true
+    fsGroupChangePolicy: "OnRootMismatch"
+    fsGroup: 1001
+    seccompProfile:
+      type: RuntimeDefault
   
   dataVolumeClaimSpec:
     storageClassName: "dev-postgres-openebs-sc"

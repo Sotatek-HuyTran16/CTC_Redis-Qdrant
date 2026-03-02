@@ -126,11 +126,7 @@ roleRef:
 # 4. Install
 
 ```bash
-sudo k8s helm install dify \ 
-  oci://registry.dev-dify.ctc.local:8080/dev/ai/dify:3.5.6
-  -f values.yaml
-  -n dev-dify
-  --plain-http
+helm install dify oci://registry.dev-dify.ctc.local:8080/dev/ai/dify:3.5.6 -f values.yaml -n dev-dify
 ```
 
 # 5. Edit secret 

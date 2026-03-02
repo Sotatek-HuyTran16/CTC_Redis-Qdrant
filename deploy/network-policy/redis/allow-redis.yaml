@@ -39,9 +39,7 @@ metadata:
   name: allow-dify-access
   namespace: dev-redis
 spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-redis-cluster
+  podSelector: {}
   policyTypes:
     - Ingress
   ingress:
