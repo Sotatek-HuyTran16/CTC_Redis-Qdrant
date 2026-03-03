@@ -1,0 +1,75 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: redis-sentinel-alerts
+  namespace: dev-monitoring
+  labels:
+    release: kube-prometheus-stack
+    app: kube-prometheus-stack
+spec:
+  groups:
+  - name: redis-cluster
+    rules:
+
+    - alert: RedisInstanceDown
+      expr: redis_up == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: Redis instance down
+        description: Redis {{ $labels.instance }} is not reachable.
+
+    - alert: RedisMasterDown
+      expr: redis_instance_info{role="master"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: Redis master missing
+        description: No active master detected.
+
+    - alert: RedisReplicationLagHigh
+      expr: redis_master_repl_offset - redis_slave_repl_offset > 10485760
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Redis replication lag high
+        description: Replica lag > 10MB.
+
+    - alert: RedisSentinelQuorumFailure
+      expr: redis_sentinel_master_status{status!="ok"} == 1
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: Sentinel quorum failure
+        description: Sentinel cannot reach quorum.
+
+    - alert: RedisHighMemoryUsage
+      expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Redis memory usage high
+        description: Above 90% maxmemory.
+
+    - alert: RedisEvictionsOccurring
+      expr: increase(redis_evicted_keys_total[5m]) > 50
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Redis evicting keys
+        description: Keys being evicted due to memory pressure.
+
+    - alert: RedisRejectedConnections
+      expr: increase(redis_rejected_connections_total[5m]) > 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: Redis rejecting connections
+        description: Maxclients limit reached.

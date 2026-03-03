@@ -43,9 +43,9 @@ replica:
   resources:
     requests:
       cpu: 250m
-      memory: 512Mi
+      memory: 128Mi
     limits:
-      cpu: 250m
+      cpu: 500m
       memory: 512Mi
 
   podLabels:

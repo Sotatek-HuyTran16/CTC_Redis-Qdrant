@@ -28,5 +28,5 @@ spec:
 # 2. Install
 
 ```bash
-helm install dev-pg-operator oci://registry.dev-dify.ctc.local:8080/dev/monitoring/prometheus-postgres-exporter:7.4.0 -f values.yaml -n dev-monitoring
+helm install dev-pg-exporter oci://registry.dev-dify.ctc.local:8080/dev/monitoring/prometheus-postgres-exporter:7.4.0 -f values.yaml -n dev-monitoring
 ```

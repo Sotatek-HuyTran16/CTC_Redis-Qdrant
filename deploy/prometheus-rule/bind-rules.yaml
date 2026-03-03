@@ -1,0 +1,65 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: bind-alerts
+  namespace: dev-monitoring
+  labels:
+    release: kube-prometheus-stack
+    app: kube-prometheus-stack
+spec:
+  groups:
+
+  # ==============================
+  # Bind DNS Alerts
+  # ==============================
+  - name: bind-dns
+    rules:
+
+    - alert: BindDNSDown
+      expr: up{job="bind"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: Bind DNS down
+        description: Bind DNS {{ $labels.instance }} is not reachable.
+
+    - alert: BindHighQueryLatency
+      expr: histogram_quantile(
+              0.95,
+              sum(rate(bind_query_duration_seconds_bucket[5m]))
+              by (le, instance)
+            ) > 0.2
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Bind DNS high query latency
+        description: 95th percentile DNS latency > 200ms.
+
+    - alert: BindHighQPS
+      expr: rate(bind_queries_total[1m]) > 5000
+      for: 3m
+      labels:
+        severity: warning
+      annotations:
+        summary: Bind DNS high query rate
+        description: DNS queries per second exceeded 5000.
+
+    - alert: BindHighServfailRate
+      expr: rate(bind_query_errors_total{error="SERVFAIL"}[5m]) > 5
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: Bind high SERVFAIL rate
+        description: High SERVFAIL responses detected.
+
+    - alert: BindFDExhaustion
+      expr: process_open_fds / process_max_fds > 0.8
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: Bind file descriptor exhaustion risk
+        description: More than 80% of file descriptors in use.

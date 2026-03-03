@@ -1,0 +1,81 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: postgresql-alerts
+  namespace: dev-monitoring
+  labels:
+    release: kube-prometheus-stack
+    app: kube-prometheus-stack
+spec:
+  groups:
+  - name: postgres-cluster
+    rules:
+    
+    - alert: PostgresInstanceDown
+      expr: pg_up == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: PostgreSQL instance down
+        description: PostgreSQL {{ $labels.instance }} is not reachable.
+
+    - alert: PostgresTooManyConnections
+      expr: sum(pg_stat_activity_count) by (instance)
+            /
+            sum(pg_settings_max_connections) by (instance)
+            * 100 > 90
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: PostgreSQL connections high
+        description: Connection usage above 90% on {{ $labels.instance }}.
+
+    - alert: PostgresReplicationLagHigh
+      expr: pg_replication_lag_seconds > 60
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: PostgreSQL replication lag high
+        description: Replication lag > 60s on {{ $labels.instance }}.
+
+    - alert: PostgresHighTransactionIdle
+      expr: pg_stat_activity_max_tx_duration{state="idle in transaction"} > 300
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Long idle transaction
+        description: Transaction idle > 5 minutes on {{ $labels.instance }}.
+
+    - alert: PostgresHighDeadTuples
+      expr: pg_stat_user_tables_n_dead_tup > 100000
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: High dead tuples
+        description: Table {{ $labels.relname }} has many dead tuples.
+
+    - alert: PostgresDiskSpaceLow
+      expr: (node_filesystem_avail_bytes{mountpoint="/var/lib/postgresql"}
+            /
+            node_filesystem_size_bytes{mountpoint="/var/lib/postgresql"})
+            * 100 < 10
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: PostgreSQL disk space low
+        description: Less than 10% disk space remaining.
+
+    - alert: PostgresSlowQueries
+      expr: increase(pg_stat_database_blk_read_time[5m]) > 10000
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: PostgreSQL slow disk reads
+        description: High block read time detected.

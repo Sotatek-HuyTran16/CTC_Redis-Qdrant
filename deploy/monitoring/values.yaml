@@ -7,6 +7,20 @@ crds:
         registry: registry.dev-dify.ctc.local
         repository: dev/monitoring/busybox
         tag: "1.31.1"
+  
+defaultRules:
+  additionalPrometheusRules:
+    - name: redis-sentinel-alerts
+      rules:
+        - alert: RedisInstanceDown
+          expr: redis_up == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: Redis instance down
+            description: Redis {{ $labels.instance }} is not reachable.
+
 
 alertmanager:
   enabled: true

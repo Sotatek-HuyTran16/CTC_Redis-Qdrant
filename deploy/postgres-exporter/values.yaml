@@ -31,7 +31,7 @@ resources:
 
 config:
   datasource:
-    host: pg-db-primary.dev-postgresql.svc.cluster.local
+    host: dev-pg-db-primary.dev-postgresql.svc.cluster.local
     user: postgres
     password: sotatek
     database: 'postgres'
