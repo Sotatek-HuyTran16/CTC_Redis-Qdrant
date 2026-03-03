@@ -1,11 +1,10 @@
 ########################
 ### Ingress
 ########################
-
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-web-from-gateway
+  name: allow-web-from-other-workloads
   namespace: dev-dify
 spec:
   podSelector:
@@ -17,10 +16,32 @@ spec:
   - from:
     - podSelector:
         matchLabels:
-          app.kubernetes.io/name: dev-dify-gateway
+          app.kubernetes.io/role: dify-app
     ports:
     - protocol: TCP
       port: 3000
+
+---
+
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-web-from-gateway
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-web
+#   policyTypes:
+#   - Ingress
+#   ingress:
+#   - from:
+#     - podSelector:
+#         matchLabels:
+#           app.kubernetes.io/name: dev-dify-gateway
+#     ports:
+#     - protocol: TCP
+#       port: 3000
 
 ---
 
@@ -52,7 +73,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-web-to-api
+  name: allow-web-to-other-workloads
   namespace: dev-dify
 spec:
   podSelector:
@@ -64,31 +85,55 @@ spec:
   - to:
     - podSelector:
         matchLabels:
-          app.kubernetes.io/name: dev-dify-api
+          app.kubernetes.io/role: dify-app
     ports:
     - protocol: TCP
-      port: 5001
+      port: 5001 # api
+    - protocol: TCP
+      port: 8082 # enterprise API
 
 ---
 
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-web-to-api-enterprise
-  namespace: dev-dify
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-dify-web
-  policyTypes:
-  - Egress
-  egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          app.kubernetes.io/name: dev-dify-enterprise-api
-    ports:
-    - protocol: TCP
-      port: 8082
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-web-to-api
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-web
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - to:
+#     - podSelector:
+#         matchLabels:
+#           app.kubernetes.io/name: dev-dify-api
+#     ports:
+#     - protocol: TCP
+#       port: 5001
+
+---
+
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-web-to-api-enterprise
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-web
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - to:
+#     - podSelector:
+#         matchLabels:
+#           app.kubernetes.io/name: dev-dify-enterprise-api
+#     ports:
+#     - protocol: TCP
+#       port: 8082
 
 ---

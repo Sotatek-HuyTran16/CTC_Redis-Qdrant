@@ -1,11 +1,10 @@
 ########################
 ### Ingress
 ########################
-
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-enterprise-audit-from-enterprise-api
+  name: allow-enterprise-audit-from-other-workloads
   namespace: dev-dify
 spec:
   podSelector:
@@ -17,149 +16,196 @@ spec:
   - from:
     - podSelector:
         matchLabels:
-          app.kubernetes.io/name: dev-dify-enterprise-api
+          app.kubernetes.io/role: dify-app
     ports:
     - protocol: TCP
       port: 8083
+    - protocol: TCP
+      port: 3443
 
 ---
 
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-enterprise-audit-liveness-from-kubelet
-  namespace: dev-dify
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-dify-audit
-  policyTypes:
-  - Ingress
-  ingress:
-  - from:
-    - ipBlock:
-        cidr: 10.10.0.0/24
-    ports:
-    - protocol: TCP
-      port: 8083
-  - from:
-    - ipBlock:
-        cidr: 10.1.0.0/16
-    ports:
-    - protocol: TCP
-      port: 8083
-  - from:
-    - ipBlock:
-        cidr: 10.152.183.0/24
-    ports:
-    - protocol: TCP
-      port: 8083
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-enterprise-audit-from-enterprise-api
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-audit
+#   policyTypes:
+#   - Ingress
+#   ingress:
+#   - from:
+#     - podSelector:
+#         matchLabels:
+#           app.kubernetes.io/name: dev-dify-enterprise-api
+#     ports:
+#     - protocol: TCP
+#       port: 8083
 
----
+# ---
 
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-enterprise-audit-ingress-all
-  namespace: dev-dify
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-dify-audit
-  policyTypes:
-  - Ingress
-  ingress:
-  - ports:
-    - protocol: TCP
-      port: 8082
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-enterprise-audit-liveness-from-kubelet
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-audit
+#   policyTypes:
+#   - Ingress
+#   ingress:
+#   - from:
+#     - ipBlock:
+#         cidr: 10.10.0.0/24
+#     ports:
+#     - protocol: TCP
+#       port: 8083
+#   - from:
+#     - ipBlock:
+#         cidr: 10.1.0.0/16
+#     ports:
+#     - protocol: TCP
+#       port: 8083
+#   - from:
+#     - ipBlock:
+#         cidr: 10.152.183.0/24
+#     ports:
+#     - protocol: TCP
+#       port: 8083
+
+# ---
+
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-enterprise-audit-ingress-all
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-audit
+#   policyTypes:
+#   - Ingress
+#   ingress:
+#   - ports:
+#     - protocol: TCP
+#       port: 8082
 
 ---
 
 ########################
 ### Egress
 ########################
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-enterprise-audit-to-internet
-  namespace: dev-dify
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-dify-audit
-  policyTypes:
-  - Egress
-  egress:
-  - to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-    ports:
-    - protocol: TCP
-      port: 443
-    - protocol: TCP
-      port: 80
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-enterprise-audit-to-internet
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-audit
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - to:
+#     - ipBlock:
+#         cidr: 0.0.0.0/0
+#     ports:
+#     - protocol: TCP
+#       port: 443
+#     - protocol: TCP
+#       port: 80
 
 ---
 
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-enterprise-audit-liveness-to-kubelet
-  namespace: dev-dify
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-dify-audit
-  policyTypes:
-  - Egress
-  egress:
-  - to:
-    - ipBlock:
-        cidr: 10.10.0.0/24
-    ports:
-    - protocol: TCP
-      port: 8083
-  - to:
-    - ipBlock:
-        cidr: 10.1.0.0/16
-    ports:
-    - protocol: TCP
-      port: 8083
-  - to:
-    - ipBlock:
-        cidr: 10.152.183.0/24
-    ports:
-    - protocol: TCP
-      port: 8083
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-enterprise-audit-liveness-to-kubelet
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-audit
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - to:
+#     - ipBlock:
+#         cidr: 10.10.0.0/24
+#     ports:
+#     - protocol: TCP
+#       port: 8083
+#   - to:
+#     - ipBlock:
+#         cidr: 10.1.0.0/16
+#     ports:
+#     - protocol: TCP
+#       port: 8083
+#   - to:
+#     - ipBlock:
+#         cidr: 10.152.183.0/24
+#     ports:
+#     - protocol: TCP
+#       port: 8083
 
 ---
 
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-enterprise-audit-egress-all
-  namespace: dev-dify
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-dify-audit
-  policyTypes:
-  - Egress
-  egress:
-  - ports:
-    - protocol: TCP
-      port: 8082
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-enterprise-audit-egress-all
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-audit
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - ports:
+#     - protocol: TCP
+#       port: 8082
 
 ---
 
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-enterprise-open-egress-all
-  namespace: dev-dify
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-dify-audit
-  policyTypes:
-  - Egress
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-enterprise-open-egress-all
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-audit
+#   policyTypes:
+#   - Egress
+
+---
+
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-enterprise-audit-to-minio
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-audit
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - to:
+#     - ipBlock:
+#         cidr: 10.10.10.0/24
+#     ports:
+#     - protocol: TCP
+#       port: 9000
+#     - protocol: TCP
+#       port: 9001

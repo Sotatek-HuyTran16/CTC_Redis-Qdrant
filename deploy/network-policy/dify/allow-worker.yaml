@@ -8,7 +8,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-worker-to-api
+  name: allow-worker-to-other-workloads
   namespace: dev-dify
 spec:
   podSelector:
@@ -20,32 +20,56 @@ spec:
   - to:
     - podSelector:
         matchLabels:
-          app.kubernetes.io/name: dev-dify-api
+          app.kubernetes.io/role: dify-app
     ports:
     - protocol: TCP
-      port: 5001
+      port: 5001 # api
+    - protocol: TCP
+      port: 8082 # enterprise-api
 
 ---
 
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-worker-to-enterprise-api
-  namespace: dev-dify
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-dify-worker
-  policyTypes:
-  - Egress
-  egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          app.kubernetes.io/name: dev-dify-enterprise-api
-    ports:
-    - protocol: TCP
-      port: 8082
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-worker-to-api
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-worker
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - to:
+#     - podSelector:
+#         matchLabels:
+#           app.kubernetes.io/name: dev-dify-api
+#     ports:
+#     - protocol: TCP
+#       port: 5001
+
+# ---
+
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-worker-to-enterprise-api
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-worker
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - to:
+#     - podSelector:
+#         matchLabels:
+#           app.kubernetes.io/name: dev-dify-enterprise-api
+#     ports:
+#     - protocol: TCP
+#       port: 8082
 
 ---
 
@@ -68,44 +92,44 @@ spec:
 
 ---
 
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-worker-to-internet
-  namespace: dev-dify
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-dify-worker
-  policyTypes:
-  - Egress
-  egress:
-  - to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-    ports:
-    - protocol: TCP
-      port: 443
-    - protocol: TCP
-      port: 80
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-worker-to-internet
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-worker
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - to:
+#     - ipBlock:
+#         cidr: 0.0.0.0/0
+#     ports:
+#     - protocol: TCP
+#       port: 443
+#     - protocol: TCP
+#       port: 80
 
 ---
 
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-worker-to-minio
-  namespace: dev-dify
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-dify-worker
-  policyTypes:
-  - Egress
-  egress:
-  - to:
-    - ipBlock:
-        cidr: 10.10.10.0/24
-    ports:
-    - protocol: TCP
-      port: 9000
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-worker-to-minio
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-worker
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - to:
+#     - ipBlock:
+#         cidr: 10.10.10.0/24
+#     ports:
+#     - protocol: TCP
+#       port: 9000

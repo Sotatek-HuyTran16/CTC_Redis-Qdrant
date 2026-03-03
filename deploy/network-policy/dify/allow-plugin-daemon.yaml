@@ -1,11 +1,10 @@
 ########################
 ### Ingress
 ########################
-
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-plugin-daemon-from-plugin-controller
+  name: allow-plugin-daemon-from-other-workloads
   namespace: dev-dify
 spec:
   podSelector:
@@ -17,7 +16,7 @@ spec:
   - from:
     - podSelector:
         matchLabels:
-          app.kubernetes.io/name: dev-dify-plugin-controller
+          app.kubernetes.io/role: dify-app
     ports:
     - protocol: TCP
       port: 5002
@@ -26,36 +25,82 @@ spec:
 
 ---
 
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-plugin-daemon-from-plugin-controller
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-plugin-daemon
+#   policyTypes:
+#   - Ingress
+#   ingress:
+#   - from:
+#     - podSelector:
+#         matchLabels:
+#           app.kubernetes.io/name: dev-dify-plugin-controller
+#     ports:
+#     - protocol: TCP
+#       port: 5002
+#     - protocol: TCP
+#       port: 5003
+
+---
+
 ########################
 ### Egress
 ########################
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-plugin-daemon-to-internet
-  namespace: dev-dify
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-dify-plugin-daemon
-  policyTypes:
-  - Egress
-  egress:
-  - to:
-    - ipBlock:
-        cidr: 0.0.0.0/0
-    ports:
-    - protocol: TCP
-      port: 443
-    - protocol: TCP
-      port: 80
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-plugin-daemon-to-internet
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-plugin-daemon
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - to:
+#     - ipBlock:
+#         cidr: 0.0.0.0/0
+#     ports:
+#     - protocol: TCP
+#       port: 443
+#     - protocol: TCP
+#       port: 80
+
+---
+
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-plugin-daemon-to-plugin-connector
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-plugin-daemon
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - to:
+#     - podSelector:
+#         matchLabels:
+#           app.kubernetes.io/name: dev-dify-plugin-connector
+#     ports:
+#     - protocol: TCP
+#       port: 5004
 
 ---
 
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-plugin-daemon-to-plugin-connector
+  name: allow-plugin-daemon-to-other-workloads
   namespace: dev-dify
 spec:
   podSelector:
@@ -67,7 +112,7 @@ spec:
   - to:
     - podSelector:
         matchLabels:
-          app.kubernetes.io/name: dev-dify-plugin-connector
+          app.kubernetes.io/role: dify-app
     ports:
     - protocol: TCP
-      port: 5004
+      port: 5004 # plugin-connector

@@ -1,11 +1,10 @@
 ########################
 ### Ingress
 ########################
-
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-plugin-manager-from-api
+  name: allow-plugin-manager-from-other-workloads
   namespace: dev-dify
 spec:
   podSelector:
@@ -17,29 +16,7 @@ spec:
   - from:
     - podSelector:
         matchLabels:
-          app.kubernetes.io/name: dev-dify-api
-    ports:
-    - protocol: TCP
-      port: 8084
-
----
-
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-plugin-manager-from-enterprise-api
-  namespace: dev-dify
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-dify-plugin-manager
-  policyTypes:
-  - Ingress
-  ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          app.kubernetes.io/name: dev-dify-enterprise-api
+          app.kubernetes.io/role: dify-app
     ports:
     - protocol: TCP
       port: 8084
@@ -50,13 +27,85 @@ spec:
 
 ---
 
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-plugin-manager-from-api
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-plugin-manager
+#   policyTypes:
+#   - Ingress
+#   ingress:
+#   - from:
+#     - podSelector:
+#         matchLabels:
+#           app.kubernetes.io/name: dev-dify-api
+#     ports:
+#     - protocol: TCP
+#       port: 8084
+
+# ---
+
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-plugin-manager-from-enterprise-api
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-plugin-manager
+#   policyTypes:
+#   - Ingress
+#   ingress:
+#   - from:
+#     - podSelector:
+#         matchLabels:
+#           app.kubernetes.io/name: dev-dify-enterprise-api
+#     ports:
+#     - protocol: TCP
+#       port: 8084
+#     - protocol: TCP
+#       port: 9084
+#     - protocol: UDP
+#       port: 9084
+
+---
+
 ########################
 ### Egress
 ########################
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-plugin-manager-to-internet
+  name: allow-plugin-manager-to-other-workloads
+  namespace: dev-dify
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dev-dify-plugin-manager
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/role: dify-app
+    ports:
+    - protocol: UDP
+      port: 9000 # enterprise API
+    - protocol: TCP
+      port: 9000 # enterprise API
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-plugin-manager-to-external-service
   namespace: dev-dify
 spec:
   podSelector:
@@ -67,7 +116,7 @@ spec:
   egress:
   - to:
     - ipBlock:
-        cidr: 0.0.0.0/0
+        cidr: 10.10.10.0/24
     ports:
     - protocol: TCP
       port: 443
@@ -93,24 +142,24 @@ spec:
 
 ---
 
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-plugin-manager-to-enterprise-api
-  namespace: dev-dify
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: dev-dify-plugin-manager
-  policyTypes:
-  - Egress
-  egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          app.kubernetes.io/name: dev-dify-enterprise-api
-    ports:
-    - protocol: UDP
-      port: 9000
-    - protocol: TCP
-      port: 9000
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-plugin-manager-to-enterprise-api
+#   namespace: dev-dify
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: dev-dify-plugin-manager
+#   policyTypes:
+#   - Egress
+#   egress:
+#   - to:
+#     - podSelector:
+#         matchLabels:
+#           app.kubernetes.io/name: dev-dify-enterprise-api
+#     ports:
+#     - protocol: UDP
+#       port: 9000
+#     - protocol: TCP
+#       port: 9000
