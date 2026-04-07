@@ -1,0 +1,41 @@
+---
+- name: Install LVM thin provisioning and ensure dm modules
+  hosts:
+    - k8s_nodes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Ensure required packages are installed
+      ansible.builtin.apt:
+        name:
+          - lvm2
+          - thin-provisioning-tools
+        state: present
+        update_cache: true
+
+    - name: Get loaded dm kernel modules
+      ansible.builtin.shell: lsmod | awk '{print $1}' | grep '^dm_'
+      register: dm_modules
+      changed_when: false
+      failed_when: false
+
+    - name: Load dm_thin_pool module if missing
+      ansible.builtin.modprobe:
+        name: dm_thin_pool
+        state: present
+      when: dm_modules.stdout is not search('dm_thin_pool')
+
+    - name: Load dm_mod module if missing
+      ansible.builtin.modprobe:
+        name: dm_mod
+        state: present
+      when: dm_modules.stdout is not search('dm_mod')
+
+    - name: Load dm_snapshot module if missing
+      ansible.builtin.modprobe:
+        name: dm_snapshot
+        state: present
+      when: dm_modules.stdout is not search('dm_snapshot')

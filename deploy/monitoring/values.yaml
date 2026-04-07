@@ -48,7 +48,7 @@ alertmanager:
     interval: 30s
     additionalLabels:
       release: kube-prometheus-stack
-  
+
   alertmanagerSpec:
     podMetadata:
       labels:
@@ -189,6 +189,11 @@ prometheusOperator:
         registry: registry.dev-dify.ctc.local
         repository: dev/monitoring/kube-webhook-certgen
         tag: 1.7.4
+      tolerations:
+        - key: "nodepool"
+          operator: "Equal"
+          value: "dev-monitoring" 
+          effect: "NoSchedule"
     
   image:
     registry: registry.dev-dify.ctc.local
@@ -384,3 +389,10 @@ coreDns:
   service:
     selector:
       app.kubernetes.io/name: coredns
+
+# kube-state-metrics:
+#   enabled: true
+#   image:
+#     registry: registry.dev-dify.ctc.local
+#     repository: dev/monitoring/kube-state-metrics
+#     tag: "v2.8.0"

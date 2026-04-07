@@ -1,0 +1,10 @@
+apiVersion: pgv2.percona.com/v2
+kind: PerconaPGBackup
+metadata:
+  name: manual-full-backup
+  namespace: dev-postgresql
+spec:
+  pgCluster: dev-pg-db
+  repoName: repo1
+  options:
+  - --type=full

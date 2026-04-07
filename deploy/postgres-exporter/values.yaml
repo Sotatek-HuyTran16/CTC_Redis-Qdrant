@@ -32,9 +32,9 @@ resources:
 config:
   datasource:
     host: dev-pg-db-primary.dev-postgresql.svc.cluster.local
-    user: postgres
+    user: admin
     password: sotatek
-    database: 'postgres'
+    database: 'dify'
 
 tolerations:
     - key: "nodepool"

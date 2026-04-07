@@ -27,6 +27,14 @@ spec:
       port: 9080
     - protocol: TCP
       port: 3101
+    - protocol: TCP
+      port: 9121
+    - protocol: TCP
+      port: 3000
+    - protocol: TCP
+      port: 10250
+    - protocol: TCP
+      port: 6333
 
 ---
 
@@ -180,6 +188,8 @@ spec:
       port: 10257
     - protocol: TCP
       port: 2381
+    - protocol: TCP
+      port: 10249
 
 # ---
 
@@ -231,3 +241,53 @@ spec:
       ports:
         - protocol: TCP
           port: 6333
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-egress-redis-exporter
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-redis
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-redis-cluster
+    ports:
+    - protocol: TCP
+      port: 9121
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-access-from-grafana
+  namespace: dev-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: dev-monitoring
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: dev-grafana
+    ports:
+    - protocol: TCP
+      port: 9090

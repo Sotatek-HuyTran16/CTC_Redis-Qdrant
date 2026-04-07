@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minio-upload-script
+  namespace: dev-redis
+data:
+  upload.sh: |
+    #!/bin/sh
+    set -e
+
+    echo "==> Configure mc"
+    mc alias set minio \
+      $MINIO_ENDPOINT \
+      $MINIO_ACCESS_KEY \
+      $MINIO_SECRET_KEY
+
+    echo "==> Upload backup to MinIO"
+    mc cp /backup/*.rdb minio/$MINIO_BUCKET/
+
+

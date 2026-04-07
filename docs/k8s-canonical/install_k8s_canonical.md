@@ -261,7 +261,7 @@ sudo ufw route allow from 10.1.0.0/16 to 10.1.0.0/16
 
 # 8. Setup to use private registry Harbor (all node)
 
-## 7.1. Image
+## 8.1. Image
 
 ## Create file
 

@@ -1,0 +1,179 @@
+---
+- name: Configure UFW for Kubernetes Cluster
+  hosts:
+    - k8s_nodes
+  become: true
+  vars:
+    pod_cidr: 10.1.0.0/16
+    node_cidr: 10.10.0.0/24
+    service_cidr: 10.152.183.0/24
+    external_service_cidr: 10.10.10.0/24
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+
+  ######################################################################
+  # 1. All nodes – Core routing & node-to-node
+  ######################################################################
+
+#  - name: Allow pod-to-pod forwarding (FORWARD)
+#    ufw:
+#      rule: allow
+#      direction: routed
+#      src: "{{ pod_cidr }}"
+#      dest: "{{ pod_cidr }}"
+#      proto: any
+
+  - name: Allow pod-to-pod forwarding (FORWARD)
+    command: |
+      sudo ufw route allow from {{ pod_cidr }} to {{ pod_cidr }}
+#    args:
+#      warn: false
+
+  - name: Allow node-to-node communication
+    ufw:
+      rule: allow
+      src: "{{ node_cidr }}"
+      dest: "{{ node_cidr }}"
+
+  ######################################################################
+  # 2. All nodes – Kubernetes core ports
+  ######################################################################
+
+  - name: Allow Kubernetes core ports
+    ufw:
+      rule: allow
+      port: "{{ item }}"
+      proto: tcp
+    loop:
+      - 10248   # kubelet health
+      - 10249   # kube-proxy metrics
+      - 10250   # kubelet API
+      - 10256   # kube-proxy health
+      - 6400    # canonical k8s daemon
+      - 6443    # kube-apiserver
+      - 2379    # etcd client
+      - 2380    # etcd peer
+      - 9000    # dqlite
+      - 10257   # kube-controller
+      - 10259   # kube-scheduler
+
+  ######################################################################
+  # 3. Calico CNI (Canonical)
+  ######################################################################
+
+  - name: Allow Calico ports
+    ufw:
+      rule: allow
+      port: "{{ item.port }}"
+      proto: "{{ item.proto }}"
+    loop:
+      - { port: 179,  proto: tcp }   # BGP (if enabled)
+      - { port: 4789, proto: udp }   # VXLAN
+      - { port: 5473, proto: tcp }   # Typha
+
+  ######################################################################
+  # 4. Worker nodes only – NodePort
+  ######################################################################
+
+  - name: Allow NodePort TCP (worker only)
+    ufw:
+      rule: allow
+      port: "30000:32767"
+      proto: tcp
+#    when: "'k8s_workers' in group_names"
+
+  - name: Allow NodePort UDP (worker only)
+    ufw:
+      rule: allow
+      port: "30000:32767"
+      proto: udp
+#    when: "'k8s_workers' in group_names"
+
+  ######################################################################
+  # 5. External services (registry, exporters)
+  ######################################################################
+
+  - name: Allow external service ports
+    ufw:
+      rule: allow
+      port: "{{ item }}"
+      proto: tcp
+    loop:
+      - 22     # ssh
+      - 8080   # registry
+      - 8081   # registry
+      - 443    # https
+      - 9119   # bind exporter
+      - 9090   # harbor exporter
+
+  - name: Allow DNS
+    ufw:
+      rule: allow
+      port: 53
+      proto: "{{ item }}"
+    loop:
+      - udp
+      - tcp
+    tags:
+      - dns
+
+  ######################################################################
+  # 6. CIDR-based allow rules (explicit)
+  ######################################################################
+
+  - name: Allow inbound from CIDRs
+    ufw:
+      rule: allow
+      direction: in
+      src: "{{ item }}"
+    loop:
+      - "{{ pod_cidr }}"
+      - "{{ service_cidr }}"
+      - "{{ node_cidr }}"
+      - "{{ external_service_cidr }}"
+
+  - name: Allow outbound to CIDRs
+    ufw:
+      rule: allow
+      direction: out
+      dest: "{{ item }}"
+    loop:
+      - "{{ pod_cidr }}"
+      - "{{ service_cidr }}"
+      - "{{ node_cidr }}"
+      - "{{ external_service_cidr }}"
+
+  ######################################################################
+  # 7. UFW default policies
+  ######################################################################
+
+  - name: Set default incoming policy to deny
+    ufw:
+      direction: incoming
+      policy: deny
+    tags:
+      - default
+
+  - name: Set default routed policy to deny
+    ufw:
+      direction: routed
+      policy: allow
+    tags:
+      - default
+
+  - name: Set default outgoing policy to allow
+    ufw:
+      direction: outgoing
+      policy: allow
+    tags:
+      - default
+
+  ######################################################################
+  # 8. Ensure UFW is enabled
+  ######################################################################
+
+  - name: Enable UFW
+    ufw:
+      state: enabled
+      policy: deny

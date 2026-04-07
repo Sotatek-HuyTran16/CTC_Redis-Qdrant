@@ -1,5 +1,5 @@
-repository: registry.dev-dify.ctc.local/dev/database/percona-distribution-postgresql:17.7
-image: registry.dev-dify.ctc.local/dev/database/percona-distribution-postgresql:17.7
+repository: registry.dev-dify.ctc.local/dev/database/percona-distribution-postgresql:17.9
+image: registry.dev-dify.ctc.local/dev/database/percona-distribution-postgresql:17.9
 imagePullPolicy: IfNotPresent
 postgresVersion: 17
 
@@ -78,14 +78,14 @@ instances:
       cpu: 500m
       memory: 512Mi
   
-  securityContext:
-    runAsUser: 1001
-    runAsGroup: 1001
-    runAsNonRoot: true
-    fsGroupChangePolicy: "OnRootMismatch"
-    fsGroup: 1001
-    seccompProfile:
-      type: RuntimeDefault
+  # securityContext:
+  #   runAsUser: 1001
+  #   # runAsGroup: 1001
+    # runAsNonRoot: true
+    # fsGroupChangePolicy: "OnRootMismatch"
+    # fsGroup: 1001
+    # seccompProfile:
+    #   type: RuntimeDefault
   
   dataVolumeClaimSpec:
     storageClassName: "dev-postgres-openebs-sc"
@@ -139,15 +139,31 @@ proxy:
         value: "dev-data"
         effect: "NoSchedule"
     
-    securityContext:
-      runAsUser: 1001
-      fsGroup: 1001
-      runAsNonRoot: true
+    # securityContext:
+    #   runAsUser: 1001
+    #   fsGroup: 1001
+    #   runAsNonRoot: true
     
 backups:
   enabled: true
   pgbackrest:
-    image: registry.dev-dify.ctc.local/dev/database/percona-pgbackrest:2.57.0
+    image: registry.dev-dify.ctc.local/dev/database/percona-pgbackrest:2.58.0
+
+    jobs:
+      tolerations:
+        - key: "nodepool"
+          operator: "Equal"
+          value: "dev-data"
+          effect: "NoSchedule"
+
+    restore:
+      repoName: repo2
+      tolerations:
+        - key: "nodepool"
+          operator: "Equal"
+          value: "dev-data"
+          effect: "NoSchedule"
+      
 
     metadata:
       labels:
@@ -201,15 +217,26 @@ backups:
           value: "dev-data"
           effect: "NoSchedule"
       
-      securityContext:
-        runAsUser: 1001
-        fsGroup: 1001
-        runAsNonRoot: true
+      # securityContext:
+      #   runAsUser: 1001
+      #   fsGroup: 1001
+      #   runAsNonRoot: true
       
     manual:
       repoName: repo1
       options:
       - --type=full
+
+    configuration:
+      - secret:
+          name: cluster1-pgbackrest-secrets
+    
+    global:
+      repo2-path: /pgbackrest/postgres-operator/cluster1/repo2
+      #repo2-storage-verify-tls: "n"
+      #repo2-s3-use-http: "y"
+      repo2-s3-verify-tls: "n"
+      repo2-s3-uri-style: path
 
     repos:
       - name: repo1
@@ -231,10 +258,10 @@ backups:
           incremental: "0 3 * * 1-6"
         s3:
           bucket: pgbackrest-bucket
-          endpoint: minio.dev-dify.ctc.local:9000
+          endpoint: http://minio.dev-dify.ctc.local:9000
           region: us-east-1
-          accessKey: 1yUePlkzozjqqyd8cklp
-          secretKey: NejP8h3IZkNGn3WFqZwecLSIElZ3leyOpIWI2AzT
+          #accessKey: 1yUePlkzozjqqyd8cklp
+          #secretKey: NejP8h3IZkNGn3WFqZwecLSIElZ3leyOpIWI2AzT
 
 pmm:
   enabled: false

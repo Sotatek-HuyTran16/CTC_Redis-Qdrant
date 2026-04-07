@@ -1,0 +1,38 @@
+- name: Configure systemd resolver
+  hosts: all
+  become: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+
+    - name: Comment all existing lines in resolved.conf (only once)
+      replace:
+        path: /etc/systemd/resolved.conf
+        regexp: '^(?!#)(.*)$'
+        replace: '# \1'
+      register: comment_result
+
+    - name: Add new Resolve block
+      blockinfile:
+        path: /etc/systemd/resolved.conf
+        marker: "# {mark} ANSIBLE MANAGED RESOLVER"
+        block: |
+          [Resolve]
+          DNS=10.10.10.10 10.10.10.11
+      notify: Restart systemd-resolved
+
+    - name: Ensure resolv.conf symlink exists
+      file:
+        src: /run/systemd/resolve/resolv.conf
+        dest: /etc/resolv.conf
+        state: link
+        force: yes
+
+  handlers:
+
+    - name: Restart systemd-resolved
+      systemd:
+        name: systemd-resolved
+        state: restarted
+        enabled: true

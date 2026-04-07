@@ -4,7 +4,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-plugin-controller-from-api
+  name: allow-plugin-controller-from-other-workloads
   namespace: dev-dify
 spec:
   podSelector:
@@ -81,12 +81,12 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-plugin-daemon-to-other-workloads
+  name: allow-plugin-controller-to-other-workloads
   namespace: dev-dify
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: dev-dify-plugin-daemon
+      app.kubernetes.io/name: dev-dify-plugin-controller
   policyTypes:
   - Egress
   egress:

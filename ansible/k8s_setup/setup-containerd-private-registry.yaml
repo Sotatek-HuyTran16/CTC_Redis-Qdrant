@@ -1,0 +1,67 @@
+---
+- name: Configure containerd registry mirrors
+  hosts:
+    - k8s_nodes
+  become: true
+
+  vars:
+    service_name: snap.k8s.containerd.service
+    ansible_python_interpreter: /usr/bin/python3
+
+    registries:
+      - name: ghcr.io
+        mirror: http://registry.dev-dify.ctc.local:8080
+      - name: quay.io
+        mirror: http://registry.dev-dify.ctc.local:8080
+      - name: docker.io
+        mirror: http://registry.dev-dify.ctc.local:8080
+      - name: registry.k8s.io
+        mirror: http://registry.dev-dify.ctc.local:8080
+      - name: registry.dev-dify.ctc.local
+        mirror: http://registry.dev-dify.ctc.local:8080
+
+  tasks:
+    - name: Check containerd service status
+      command: systemctl is-active {{ service_name }}
+      register: containerd_status
+      failed_when: false
+      changed_when: false
+
+    - name: Fail if containerd service not found
+      fail:
+        msg: "{{ service_name }} not found on this system"
+      when: containerd_status.rc != 0 and
+            "'inactive'" not in containerd_status.stdout
+
+    - name: Create registry directories
+      file:
+        path: "/etc/containerd/hosts.d/{{ item.name }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+      loop: "{{ registries }}"
+
+    - name: Create hosts.toml for registries
+      copy:
+        dest: "/etc/containerd/hosts.d/{{ item.name }}/hosts.toml"
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          [host."{{ item.mirror }}"]
+          capabilities = ["pull", "resolve"]
+      loop: "{{ registries }}"
+      notify: Restart containerd
+
+  handlers:
+    # 4. Reload + restart service (chỉ chạy khi có thay đổi)
+    - name: Restart containerd
+      command: systemctl daemon-reload
+      notify:
+        - Restart containerd service
+
+    - name: Restart containerd service
+      systemd:
+        name: "{{ service_name }}"
+        state: restarted

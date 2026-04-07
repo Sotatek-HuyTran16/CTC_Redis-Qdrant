@@ -204,6 +204,8 @@ web:
 
   replicas: 1
 
+  serviceAccountName: "dev-dify-web-sa"
+
   additionalLabels:
     app.kubernetes.io/role: dify-app
     app.kubernetes.io/project: redis-qdrant
@@ -374,6 +376,8 @@ enterpriseAudit:
     tag: "0.12.5"
   replicas: 1
 
+  serviceAccountName: "dev-dify-audit-sa"
+
   additionalLabels:
     app.kubernetes.io/role: dify-app
     app.kubernetes.io/project: redis-qdrant
@@ -524,11 +528,11 @@ ssrfProxy:
       effect: "NoSchedule"
 
 unstructured:
-  enabled: false
+  enabled: true
   image:
     repository: registry.dev-dify.ctc.local/dev/ai/unstructured-api
     tag: "0.0.70"
-  replicas: 0
+  replicas: 1
 
   additionalLabels:
     app.kubernetes.io/role: dify-app
@@ -581,9 +585,9 @@ unstructured:
       operator: "Equal"
       value: "dev-dify"
       effect: "NoSchedule"
-    - key: "node.kubernetes.io/disk-pressure"
-      operator: "Exists"
-      effect: "NoSchedule"
+    # - key: "node.kubernetes.io/disk-pressure"
+    #   operator: "Exists"
+    #   effect: "NoSchedule"
 
 
 plugin_daemon:
@@ -592,6 +596,8 @@ plugin_daemon:
     repository: registry.dev-dify.ctc.local/dev/ai/dify-plugin-daemon
     tag: "0.2.0-serverless"
   replicas: 1
+
+  serviceAccountName: "dev-dify-plugin-daemon-sa"
 
   additionalLabels:
     app.kubernetes.io/role: dify-app
@@ -644,6 +650,8 @@ plugin_controller:
     repository: registry.dev-dify.ctc.local/dev/ai/enterprise_plugin-crd
     tag: 0.12.5
   
+  serviceAccountName: "dev-dify-plugin-controller-sa"
+
   additionalLabels:
     app.kubernetes.io/role: dify-app
     app.kubernetes.io/project: redis-qdrant
@@ -692,6 +700,8 @@ plugin_connector:
     repository: registry.dev-dify.ctc.local/dev/ai/enterprise_plugin-connector
     tag: 0.12.5
   
+  serviceAccountName: "dev-dify-plugin-connector-sa"
+
   resources:
     requests:
       cpu: "250m"
@@ -763,6 +773,8 @@ plugin_connector:
 gateway:
   replicas: 1
 
+  serviceAccountName: "dev-dify-gateway-sa"
+
   image:
     repository: registry.dev-dify.ctc.local/dev/ai/enterprise_gateway
     tag: 0.12.5
@@ -815,6 +827,8 @@ plugin_manager:
     repository: registry.dev-dify.ctc.local/dev/ai/dify-plugin-manager
     tag: "0.12.5"
   replicas: 1
+
+  serviceAccountName: "dev-dify-plugin-manager-sa"
 
   additionalLabels:
     app.kubernetes.io/role: dify-app

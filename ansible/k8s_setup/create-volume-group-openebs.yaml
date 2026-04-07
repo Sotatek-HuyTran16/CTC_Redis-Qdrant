@@ -1,0 +1,46 @@
+---
+- name: Setup LVM on /dev/sdb
+  hosts:
+    - k8s_nodes
+  become: true
+  vars:
+    disk: /dev/sdb
+    vg_name: lvm-openebs
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+    - name: Ensure lvm2 is installed
+      package:
+        name: lvm2
+        state: present
+
+    - name: Check if disk exists
+      command: lsblk {{ disk }}
+      register: disk_check
+      failed_when: false
+      changed_when: false
+
+    - name: Fail if disk does not exist
+      fail:
+        msg: "{{ disk }} does not exist"
+      when: disk_check.rc != 0
+
+    - name: Check if physical volume exists
+      command: sudo pvs {{ disk }}
+      register: pv_check
+      failed_when: false
+      changed_when: false
+
+    - name: Create physical volume
+      command: sudo pvcreate {{ disk }}
+      when: pv_check.rc != 0
+
+    - name: Check if volume group exists
+      command: sudo vgdisplay {{ vg_name }}
+      register: vg_check
+      failed_when: false
+      changed_when: false
+
+    - name: Create volume group
+      command: sudo vgcreate {{ vg_name }} {{ disk }}
+      when: vg_check.rc != 0
